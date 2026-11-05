@@ -90,6 +90,7 @@
   },
   "file": {
     "maxSizeMB": 650,
+    "_maxSizeNote": "Checked as decimal MB (650,000,000 bytes), the stricter reading of KDP's \"650MB\".",
     "noEncryption": true,
     "singlePagesOnly": true,
     "disallowed": ["crop marks", "trim marks", "bookmarks", "comments", "annotations", "invisible objects", "placeholder text"],

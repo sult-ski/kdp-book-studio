@@ -1,6 +1,8 @@
 // Runs every check and returns one sorted issue list: whole-book issues first, then by page.
 import { checkPageSize } from './checks/pageSize.js';
 import { checkPageCount } from './checks/pageCount.js';
+import { checkFonts } from './checks/fonts.js';
+import { checkFileRules } from './checks/fileRules.js';
 
 const SEVERITY_ORDER = { fail: 0, warn: 1, info: 2 };
 
@@ -14,6 +16,8 @@ export function runChecks(specs, pdf, settings) {
   const issues = [
     ...checkPageCount(specs, pdf, settings),
     ...checkPageSize(specs, pdf, settings),
+    ...checkFonts(specs, pdf),
+    ...checkFileRules(specs, pdf),
   ];
   return issues.sort((a, b) =>
     (a.page ?? 0) - (b.page ?? 0) || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);

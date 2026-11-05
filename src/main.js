@@ -5,10 +5,12 @@ import { summarize, formatPageList } from './engine/summarize.js';
 import { runChecks, groupIssues } from './engine/runChecks.js';
 
 const $ = (id) => document.getElementById(id);
-const MB = 1024 * 1024;
+const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked
 const ICON = { fail: '❌', warn: '⚠️', info: 'ℹ️' };
 // Checks not built yet. Shown so a clean result never implies more than we actually checked.
-const NOT_CHECKED_YET = ['fonts embedded', 'margins and gutter', 'image resolution', 'bleed artwork', 'blank pages', 'file rules (encryption, comments, bookmarks)'];
+const NOT_CHECKED_YET = ['margins and gutter', 'image resolution', 'bleed artwork', 'blank pages', 'minimum font size'];
+// KDP rules we can't check reliably. Listed so authors know to check these themselves.
+const NOT_SUPPORTED = ['crop or trim marks drawn on the page', 'invisible objects', 'placeholder text', 'metadata'];
 
 // Fill dropdowns from the config, never from hard-coded lists.
 $('trim').innerHTML = listTrims(specs)
@@ -28,6 +30,12 @@ $('settings').addEventListener('submit', async (e) => {
     bleed: document.querySelector('input[name=bleed]:checked').value === 'yes',
     toleranceIn: Number.isFinite(tol) && tol >= 0 ? tol : specs.app.sizeToleranceIn,
   };
+
+  // Too big to upload to KDP, and too big to load safely in a browser tab.
+  if (file.size / MB > specs.file.maxSizeMB) {
+    $('result').innerHTML = `<div class="card bad">❌ This file is ${(file.size / MB).toFixed(0)} MB. KDP's limit is ${specs.file.maxSizeMB} MB; larger files fail to upload. Reduce the file size (for example, export images at 300 DPI) and check again.</div>`;
+    return;
+  }
 
   const btn = e.submitter; btn.disabled = true;
   $('result').innerHTML = '<div class="card muted">Reading your PDF…</div>';
@@ -52,7 +60,7 @@ function render(s, issues, file) {
   const warns = groups.filter((i) => i.severity === 'warn').length;
   const verdict = fails
     ? `<div class="card verdict fail">❌ ${fails} problem${fails === 1 ? '' : 's'} KDP will reject${warns ? `, ${warns} warning${warns === 1 ? '' : 's'}` : ''}</div>`
-    : `<div class="card verdict pass">✅ Page size and page count pass${warns ? ` (${warns} warning${warns === 1 ? '' : 's'})` : ''}</div>`;
+    : `<div class="card verdict pass">✅ No problems found in the checks so far${warns ? ` (${warns} warning${warns === 1 ? '' : 's'})` : ''}</div>`;
   const list = issues.length
     ? `<ul class="issues">${groups.map(renderIssue).join('')}</ul>`
     : '<p class="ok">No problems found in these checks.</p>';
@@ -73,7 +81,8 @@ function render(s, issues, file) {
       <table><tr><th>Page size found</th><th>Pages</th></tr>${rows}</table>
     </div>
     <div class="card muted">
-      <strong>Not checked yet:</strong> ${NOT_CHECKED_YET.join(', ')}. These are coming soon, so a pass here doesn't cover them.
+      <p><strong>Not checked yet:</strong> ${NOT_CHECKED_YET.join(', ')}. These are coming soon, so a pass here doesn't cover them.</p>
+      <p><strong>Not supported:</strong> ${NOT_SUPPORTED.join(', ')}. KDP asks for files without these, but we can't detect them reliably, so please check them yourself.</p>
     </div>`;
 }
 

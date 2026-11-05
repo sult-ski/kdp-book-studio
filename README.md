@@ -15,4 +15,4 @@ npm test        # engine tests (Node 18+)
 - `src/ui/` — styles (UI logic in `src/main.js` for now).
 
 ## Status
-Milestone 2: page size (vs trim or trim + bleed, with tolerance), spread detection and page count checks, shown as a plain issue list. `npm run fixtures` writes test PDFs to `tests/fixtures/out/`.
+Milestones 2–3: page size (vs trim or trim + bleed, with tolerance), spread detection and page count checks; fonts embedded (including inside placed PDFs); file rules (encryption, 650 MB limit, comments, links, forms, bookmarks, JavaScript). Shown as a plain issue list. `npm run fixtures` writes test PDFs to `tests/fixtures/out/`.

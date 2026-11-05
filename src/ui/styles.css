@@ -29,3 +29,4 @@ details[open] summary { margin-bottom: .75rem; }
 .issue .meta { font-size: .875rem; color: var(--muted); }
 .issue a { color: var(--accent); }
 td, th { text-align: left; padding: .4rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.card > p:first-child { margin-top: 0; } .card > p:last-child { margin-bottom: 0; }
