@@ -2,7 +2,8 @@
 // Top, bottom and outside use the bleed-dependent minimum; the inside (gutter) depends on page count.
 // Mirrored per page: odd pages bind on the LEFT, even pages on the RIGHT.
 // With bleed, distances are measured from the trim line (bleed is added at top, bottom and outside only).
-import { expectedPageSize, gutterFor, outsideMarginFor, sourceUrl } from '../specs.js';
+import { expectedPageSize, sourceUrl } from '../specs.js';
+import { marginEdges } from '../layout.js';
 import { scanEdge } from '../ink.js';
 import { artAtEdgeWithoutBleed, artShortOfBleedEdge } from './bleed.js';
 import { inches } from '../format.js';
@@ -19,21 +20,9 @@ const EPS = 1e-6;
 export function checkPageMargins(specs, page, render, { settings, printedPageCount }) {
   if (!pageMatchesExpectedSize(specs, page, settings)) return []; // the page size check reports it
 
-  const ext = settings.bleed ? specs.bleed.extendBeyondTrim : 0;
-  const bindsLeft = page.side === 'right'; // recto pages bind on the left
-  const outsideMin = outsideMarginFor(specs, settings.bleed);
-  // Below KDP's minimum page count (already a fail), still apply the smallest gutter band.
-  const firstBand = specs.margins.gutterByPageCount[0];
-  const gutter = gutterFor(specs, printedPageCount) ?? (printedPageCount < firstBand.min ? firstBand.inside : null);
   const tolerance = 1 / render.dpi; // measurement resolution
   const source = sourceUrl(specs, specs.margins);
-
-  const edges = [
-    { edge: 'top', physical: 'top', offset: ext, required: outsideMin },
-    { edge: 'bottom', physical: 'bottom', offset: ext, required: outsideMin },
-    { edge: 'outside', physical: bindsLeft ? 'right' : 'left', offset: ext, required: outsideMin },
-  ];
-  if (gutter != null) edges.push({ edge: 'inside', physical: bindsLeft ? 'left' : 'right', offset: 0, required: gutter });
+  const edges = marginEdges(specs, page, settings, printedPageCount);
 
   const issues = [];
   for (const e of edges) {

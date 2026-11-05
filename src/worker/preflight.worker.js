@@ -1,6 +1,7 @@
 // Runs the whole preflight off the main thread, so the page stays responsive on big books.
 // Messages in:  { bytes: Uint8Array, settings }
-// Messages out: { type: 'progress', done, total } | { type: 'result', summary, issues } | { type: 'error', message }
+// Messages out: { type: 'progress', done, total } | { type: 'thumb', page, blob }
+//             | { type: 'result', summary, issues, pages } | { type: 'error', message }
 import * as pdfjs from 'pdfjs-dist';
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import specs from '../config/kdp-specs.json';
@@ -48,6 +49,20 @@ class NoFilterFactory {
   destroy() {}
 }
 
+const THUMB_WIDTH_PX = 320; // shown at up to 160 CSS px, sharp on 2x screens
+
+/** A small image of a rendered page for the report (only pages with issues). */
+async function thumbnail(render) {
+  const full = new OffscreenCanvas(render.widthPx, render.heightPx);
+  full.getContext('2d').putImageData(new ImageData(render.rgba, render.widthPx, render.heightPx), 0, 0);
+  const scale = THUMB_WIDTH_PX / render.widthPx;
+  const small = new OffscreenCanvas(THUMB_WIDTH_PX, Math.round(render.heightPx * scale));
+  const ctx = small.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(full, 0, 0, small.width, small.height);
+  return small.convertToBlob({ type: 'image/webp', quality: 0.8 }); // browsers without WebP fall back to PNG
+}
+
 const assets = new URL(`${import.meta.env.BASE_URL}pdfjs/`, self.location.origin).href;
 
 self.onmessage = async ({ data: { bytes, settings } }) => {
@@ -66,9 +81,16 @@ self.onmessage = async ({ data: { bytes, settings } }) => {
         wasmUrl: `${assets}wasm/`,
       },
       onProgress: ({ done, total }) => self.postMessage({ type: 'progress', done, total }),
+      onPage: async ({ page, render }) => {
+        try {
+          self.postMessage({ type: 'thumb', page: page.number, blob: await thumbnail(render) });
+        } catch (e) {
+          console.error(`Could not make a thumbnail for page ${page.number}:`, e); // the report works without it
+        }
+      },
     });
     if (result.error) self.postMessage({ type: 'error', message: result.error });
-    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues });
+    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues, pages: result.pages });
   } catch (e) {
     console.error(e);
     self.postMessage({ type: 'error', message: 'Something went wrong while checking this file. Please try again, or try re-exporting the PDF.' });

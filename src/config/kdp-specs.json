@@ -6,7 +6,8 @@
       "submission": "https://kdp.amazon.com/en_US/help/topic/G201857950",
       "trimBleedMargins": "https://kdp.amazon.com/en_US/help/topic/GVBQ3CMEQW3W2VL6",
       "saveManuscript": "https://kdp.amazon.com/en_US/help/topic/G202145060",
-      "fixFormatting": "https://kdp.amazon.com/en_US/help/topic/G201834260"
+      "fixFormatting": "https://kdp.amazon.com/en_US/help/topic/G201834260",
+      "cover": "https://kdp.amazon.com/en_US/help/topic/G201953020"
     }
   },
   "bleed": {
@@ -110,6 +111,11 @@
     "_edgeInkNote": "Ink this close to a page edge counts as touching it (bleed checks).",
     "inkThreshold": 250,
     "_inkThresholdNote": "A pixel counts as ink when its darkest RGB channel is below this (0-255). 250 ignores near-white paper tints."
+  },
+  "transparency": {
+    "_note": "KDP's cover page says 'Flatten all transparencies'; it has no interior rule. Interior transparency is advice only (info).",
+    "source": "cover",
+    "lastVerified": "2026-11-05"
   },
   "blankPages": {
     "maxConsecutiveStartOrMiddle": 4,
