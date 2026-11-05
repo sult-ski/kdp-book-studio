@@ -9,3 +9,14 @@ export function inches(n) {
 export function size(w, h) {
   return `${inches(w)} x ${inches(h)}`;
 }
+
+/** '140 x 215.9 mm' from inches (1 decimal, trailing .0 dropped) */
+export function sizeMm(w, h) {
+  const mm = (n) => Number((n * 25.4).toFixed(1));
+  return `${mm(w)} x ${mm(h)} mm`;
+}
+
+/** '6" x 9" (152.4 x 228.6 mm)' */
+export function sizeBoth(w, h) {
+  return `${size(w, h)} (${sizeMm(w, h)})`;
+}

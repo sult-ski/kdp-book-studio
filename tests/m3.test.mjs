@@ -94,15 +94,13 @@ await test('fonts inside a placed PDF (Form XObject) are found', async () => {
   assert.match(issues[0].message, /Times-Roman/);
 });
 
-await test('annotated: comments fail per page, links warn once', async () => {
+await test('annotated: comments warn per page, links are a note under their own page', async () => {
   const issues = await check(await fixtures.annotated());
-  assert.deepEqual(ids(issues), ['file-links', 'file-comments-p2']);
-  const comments = issues.find((i) => i.id === 'file-comments-p2');
-  assert.equal(comments.severity, 'fail');
-  assert.equal(comments.measured, 'Text, Highlight');
-  const links = issues.find((i) => i.id === 'file-links');
-  assert.equal(links.severity, 'warn');
-  assert.match(links.message, /page 4\./);
+  assert.deepEqual(issues.map((i) => [i.id, i.severity, i.page]),
+    [['file-comments-p2', 'warn', 2], ['file-links-p4', 'info', 4]]);
+  assert.equal(issues[0].measured, 'Text, Highlight');
+  assert.match(issues[0].fix, /untick "Comments as PDF annotations"/);
+  assert.match(issues[1].message, /links usually pass review/);
 });
 
 await test('encrypted fixture fails', async () => {
@@ -119,7 +117,7 @@ await test('unparseable encrypted file gets a locked-file message', async () => 
   assert.match(pdf.error, /locked or encrypted/);
 });
 
-await test('bookmarks, form fields, JavaScript warn', async () => {
+await test('bookmarks are a note; form fields and JavaScript warn', async () => {
   const doc = await makeDoc();
   addBookmark(doc);
   doc.getForm().createTextField('name').addToPage(doc.getPage(2), { x: 100, y: 100 });
@@ -127,7 +125,7 @@ await test('bookmarks, form fields, JavaScript warn', async () => {
   const issues = await check(await doc.save());
   const file = issues.filter((i) => i.checkId === 'fileRules');
   assert.deepEqual(file.map((i) => [i.id, i.severity]).sort(),
-    [['file-bookmarks', 'warn'], ['file-forms', 'warn'], ['file-javascript', 'warn']]);
+    [['file-bookmarks', 'info'], ['file-forms', 'warn'], ['file-javascript', 'warn']]);
   assert.match(file.find((i) => i.id === 'file-javascript').message, /our advice, not a KDP rule/);
 });
 

@@ -60,6 +60,12 @@ export function pageMatchesExpectedSize(specs, page, settings) {
 // Zone names in messages, and the margin name used in fixes.
 const ZONE = { top: 'top margin', bottom: 'bottom margin', outside: 'outside margin', inside: 'gutter zone (inside margin)' };
 const MARGIN = { top: 'top', bottom: 'bottom', outside: 'outside', inside: 'inside' };
+const LIBREOFFICE_MARGIN = {
+  top: 'In LibreOffice: Format → Page Style → Page tab, raise "Top" (if a header sits in the margin, also check the Header tab).',
+  bottom: 'In LibreOffice: Format → Page Style → Page tab, raise "Bottom" (if a footer or page number sits in the margin, also check the Footer tab).',
+  outside: 'In LibreOffice: Format → Page Style → Page tab, set "Page layout" to Mirrored, then raise "Outer".',
+  inside: 'In LibreOffice: Format → Page Style → Page tab, set "Page layout" to Mirrored, then raise "Inner".',
+};
 
 function makeIssue({ e, kind, distance: raw, hit, page, render, settings, printedPageCount, source }) {
   const distance = Math.round(raw * 100) / 100; // report at the measurement resolution (0.01" at 100 DPI)
@@ -92,7 +98,7 @@ function makeIssue({ e, kind, distance: raw, hit, page, render, settings, printe
       severity: 'fail',
       accuracy: 'verified',
       message: `Text inside the ${ZONE[e.edge]}. ${why}; this text ${where.replace(/^it /, '')}.`,
-      fix: `Increase the ${MARGIN[e.edge]} margin to at least ${req} in your document and re-export the PDF.`,
+      fix: `Increase the ${MARGIN[e.edge]} margin to at least ${req} in your document and re-export the PDF. ${LIBREOFFICE_MARGIN[e.edge]}`,
     };
   }
   return {

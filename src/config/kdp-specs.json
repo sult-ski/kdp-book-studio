@@ -76,8 +76,8 @@
   "images": {
     "minDpi": 300,
     "recommendedMaxDpi": 600,
-    "appFailBelowDpi": 200,
-    "_note": "appFailBelowDpi is OUR threshold, not a KDP rule. KDP only states 300 minimum.",
+    "appVeryLowBelowDpi": 200,
+    "_note": "appVeryLowBelowDpi is OUR threshold, not a KDP rule. KDP only states 300 minimum. Both levels are warnings: KDP doesn't block low-DPI images.",
     "source": "submission",
     "lastVerified": "2026-11-05"
   },
@@ -99,7 +99,8 @@
   },
   "app": {
     "_note": "OUR settings, not KDP rules. KDP publishes no measurement tolerance.",
-    "sizeToleranceIn": 0.01,
+    "sizeToleranceIn": 0.02,
+    "_sizeToleranceNote": "0.02\" comes from a real approved book: a 63-page LibreOffice interior at 5.512\" x 8.5\" (140 mm wide) on a 5.5\" x 8.5\" trim went live on KDP with no issues (Nov 2026). KDP publishes no tolerance; this is our setting.",
     "spreadMatchRatio": 0.05,
     "renderDpi": 100,
     "_renderDpiNote": "Pages are rendered at this DPI to find ink; margin measurements are accurate to about 1/renderDpi inch.",

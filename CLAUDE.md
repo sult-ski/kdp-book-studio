@@ -8,7 +8,8 @@ Phase 1 of KDP Book Studio: a client-side KDP paperback **interior** preflight c
 - Libraries: pdf-lib (MIT) and pdfjs-dist (Apache-2.0) only for PDF work. Never PyMuPDF or any AGPL code. Ask before adding any other dependency.
 - Every KDP value lives in `src/config/kdp-specs.json` (with source URL + lastVerified). Never hard-code spec numbers elsewhere; read them via `src/engine/specs.js`.
 - Never claim a check you can't do reliably. Each issue carries `accuracy: "verified" | "best-effort"`. Unsupported checks are listed as "Not supported yet" in the UI.
-- The 200 DPI fail threshold is OUR rule (`images.appFailBelowDpi`), not KDP's. Label it that way in the report.
+- The 200 DPI "very low" threshold is OUR rule (`images.appVeryLowBelowDpi`), not KDP's. Label it that way in the report.
+- Severity tiers (owner decision, Nov 2026, from a real approved book): fail = KDP actually blocks it (size beyond tolerance, spreads, text in margins, unembedded fonts, page-count limits, encryption, >650 MB); warn = risky (comments/markup, forms, JavaScript, low DPI, art in margins); info = guideline that usually passes (links, bookmarks, subset fonts, odd page count, size within tolerance).
 - Engine (`src/engine/`) has no DOM code, so it runs in a Web Worker and in Node tests.
 - UI is for non-technical authors: plain English, mobile-first, no jargon without explanation.
 

@@ -54,11 +54,22 @@ await test('bleed setting expects trim + 0.125" x 0.25"', async () => {
   assert.match(trimPages[0].fix, /choose "No bleed"/);
 });
 
-await test('tolerance: 0.005" off passes, 0.02" off fails, custom tolerance respected', async () => {
-  assert.deepEqual(await check(await makePdf(repeat(24, [6.005, 9.005])), NO_BLEED), []);
-  const off = await makePdf(repeat(24, [6.02, 9]));
-  assert.equal(ofCheck(await check(off, NO_BLEED), 'pageSize').length, 24);
-  assert.deepEqual(await check(off, { ...NO_BLEED, toleranceIn: 0.03 }), []);
+await test('tolerance (0.02" default): exact = silent, within = info in inches + mm, beyond = fail', async () => {
+  assert.deepEqual(await check(await makePdf(repeat(24, [6, 9])), NO_BLEED), []);
+  // The real approved LibreOffice book: 140 mm wide (5.512") on a 5.5" x 8.5" trim.
+  const real = await check(await makePdf(repeat(24, [140 / 25.4, 8.5])), { ...NO_BLEED, trim: '5.5x8.5' });
+  assert.equal(real.length, 24);
+  assert.ok(real.every((i) => i.severity === 'info' && i.checkId === 'pageSize'));
+  assert.match(real[0].message, /^Page size is 5\.512" x 8\.5" \(140 x 215\.9 mm\), 0\.012" wider than 5\.5" x 8\.5" \(139\.7 x 215\.9 mm\)\. That is within our 0\.02" tolerance/);
+  assert.equal(groupIssues(real).length, 1);
+  // Beyond tolerance: fail, with mm in the message and LibreOffice steps in the fix.
+  const off = await check(await makePdf(repeat(24, [6.03, 9])), NO_BLEED);
+  assert.ok(off.length === 24 && off.every((i) => i.severity === 'fail'));
+  assert.match(off[0].message, /\(153\.2 x 228\.6 mm\)/);
+  assert.match(off[0].fix, /LibreOffice Writer: Format → Page Style → Page tab/);
+  // Custom tolerance.
+  const custom = await check(await makePdf(repeat(24, [6.03, 9])), { ...NO_BLEED, toleranceIn: 0.05 });
+  assert.ok(custom.every((i) => i.severity === 'info'));
 });
 
 await test('rotated page reads upright; unrotated landscape page flagged as sideways', async () => {

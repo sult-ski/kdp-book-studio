@@ -80,7 +80,7 @@ await test('gutter-212p: text 0.31" from the binding fails the 0.5" gutter, mirr
   const p47 = m.find((i) => i.page === 47);
   assert.match(p47.message,
     /^Text inside the gutter zone \(inside margin\)\. Your book has 212 pages, so KDP requires a 0\.5" inside margin; this text sits 0\.3\d" from the binding edge\.$/);
-  assert.equal(p47.fix, 'Increase the inside margin to at least 0.5" in your document and re-export the PDF.');
+  assert.equal(p47.fix, 'Increase the inside margin to at least 0.5" in your document and re-export the PDF. In LibreOffice: Format → Page Style → Page tab, set "Page layout" to Mirrored, then raise "Inner".');
   near(p47.measured, 0.31);
   // Odd pages bind on the left, even pages on the right: the offending ink is on that side.
   assert.ok(m.find((i) => i.page === 1).bbox.x < 1);

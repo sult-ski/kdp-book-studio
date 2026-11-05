@@ -32,3 +32,4 @@ td, th { text-align: left; padding: .4rem 0; border-bottom: 1px solid var(--line
 .card > p:first-child { margin-top: 0; } .card > p:last-child { margin-bottom: 0; }
 .progress { font-weight: 600; }
 progress { width: 100%; height: .75rem; accent-color: var(--accent); }
+.verdict .sub { display: block; font-size: .875rem; font-weight: 400; color: var(--muted); margin-top: .25rem; }

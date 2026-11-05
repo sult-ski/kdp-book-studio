@@ -82,11 +82,15 @@ function render(s, issues, file) {
   const rows = s.sizeGroups.map((g) =>
     `<tr><td>${g.widthIn}" x ${g.heightIn}"</td><td>${formatPageList(g.pages)}</td></tr>`).join('');
   const groups = groupIssues(issues);
-  const fails = groups.filter((i) => i.severity === 'fail').length;
-  const warns = groups.filter((i) => i.severity === 'warn').length;
+  // The verdict counts fails only: things KDP actually blocks. Warnings and notes are listed below it.
+  const count = (sev) => groups.filter((i) => i.severity === sev).length;
+  const fails = count('fail');
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  const extras = [count('warn') && plural(count('warn'), 'warning'), count('info') && plural(count('info'), 'note')]
+    .filter(Boolean).join(' and ');
   const verdict = fails
-    ? `<div class="card verdict fail">❌ ${fails} problem${fails === 1 ? '' : 's'} KDP will reject${warns ? `, ${warns} warning${warns === 1 ? '' : 's'}` : ''}</div>`
-    : `<div class="card verdict pass">✅ No problems found in the checks so far${warns ? ` (${warns} warning${warns === 1 ? '' : 's'})` : ''}</div>`;
+    ? `<div class="card verdict fail">❌ ${plural(fails, 'problem')} KDP will reject${extras ? `<span class="sub">Also ${extras} below.</span>` : ''}</div>`
+    : `<div class="card verdict pass">✅ Ready for KDP${extras ? `<span class="sub">${extras} below: worth a look, but KDP doesn't usually block these.</span>` : ''}</div>`;
   const list = issues.length
     ? `<ul class="issues">${groups.map(renderIssue).join('')}</ul>`
     : '<p class="ok">No problems found in these checks.</p>';
