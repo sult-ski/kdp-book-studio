@@ -19,17 +19,32 @@ export function runChecks(specs, pdf, settings) {
     ...checkFonts(specs, pdf),
     ...checkFileRules(specs, pdf),
   ];
+  return sortIssues(issues);
+}
+
+/** Whole-book issues first, then by page; within a page, fails before warnings before info. */
+export function sortIssues(issues) {
   return issues.sort((a, b) =>
     (a.page ?? 0) - (b.page ?? 0) || SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 }
 
-/** Collapse issues that say the same thing on different pages into one: { ...firstIssue, pages:[...] } */
+/**
+ * Collapse issues that say the same thing on different pages into one: { ...issue, pages:[...] }.
+ * Issues with a `groupKey` (e.g. margins, where each page has its own measurement) group by that key
+ * and show the worst page's message (smallest `measured` value).
+ */
 export function groupIssues(issues) {
   const groups = new Map();
   for (const i of issues) {
-    const key = `${i.checkId}|${i.severity}|${i.message}`;
+    const key = `${i.checkId}|${i.severity}|${i.groupKey ?? i.message}`;
     if (!groups.has(key)) groups.set(key, { ...i, pages: [] });
-    if (i.page != null) groups.get(key).pages.push(i.page);
+    const g = groups.get(key);
+    if (i.page != null) g.pages.push(i.page);
+    if (i.groupKey && parseFloat(i.measured) < parseFloat(g.measured)) {
+      Object.assign(g, { ...i, pages: g.pages, worstPage: i.page });
+    } else if (i.groupKey && g.worstPage == null) {
+      g.worstPage = i.page;
+    }
   }
   return [...groups.values()].sort((a, b) =>
     SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (a.pages[0] ?? 0) - (b.pages[0] ?? 0));

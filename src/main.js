@@ -1,14 +1,14 @@
 import specs from './config/kdp-specs.json';
 import { listTrims, listInkPaper } from './engine/specs.js';
-import { loadPdf } from './engine/loadPdf.js';
-import { summarize, formatPageList } from './engine/summarize.js';
-import { runChecks, groupIssues } from './engine/runChecks.js';
+import { formatPageList } from './engine/summarize.js';
+import { groupIssues } from './engine/runChecks.js';
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked
 const ICON = { fail: '❌', warn: '⚠️', info: 'ℹ️' };
+let worker; // the preflight Web Worker for the current check
 // Checks not built yet. Shown so a clean result never implies more than we actually checked.
-const NOT_CHECKED_YET = ['margins and gutter', 'image resolution', 'bleed artwork', 'blank pages', 'minimum font size'];
+const NOT_CHECKED_YET = ['image resolution', 'bleed artwork', 'blank pages', 'minimum font size'];
 // KDP rules we can't check reliably. Listed so authors know to check these themselves.
 const NOT_SUPPORTED = ['crop or trim marks drawn on the page', 'invisible objects', 'placeholder text', 'metadata'];
 
@@ -39,16 +39,42 @@ $('settings').addEventListener('submit', async (e) => {
 
   const btn = e.submitter; btn.disabled = true;
   $('result').innerHTML = '<div class="card muted">Reading your PDF…</div>';
-  try {
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const pdf = await loadPdf(bytes);
-    if (pdf.error) { $('result').innerHTML = `<div class="card bad">${pdf.error}</div>`; return; }
-    render(summarize(specs, pdf, settings), runChecks(specs, pdf, settings), file);
-  } catch (err) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const done = () => { btn.disabled = false; };
+  const showError = (message) => { $('result').innerHTML = `<div class="card bad">${escapeHtml(message)}</div>`; done(); };
+
+  // A fresh worker per check; terminating the old one cancels any check still running.
+  worker?.terminate();
+  worker = new Worker(new URL('./worker/preflight.worker.js', import.meta.url), { type: 'module' });
+  worker.onmessage = ({ data }) => {
+    if (data.type === 'progress') showProgress(data.done, data.total);
+    else if (data.type === 'result') { render(data.summary, data.issues, file); done(); }
+    else if (data.type === 'error') showError(data.message);
+  };
+  worker.onerror = (err) => {
     console.error(err);
-    $('result').innerHTML = '<div class="card bad">Something went wrong while checking this file. Please try again, or try re-exporting the PDF.</div>';
-  } finally { btn.disabled = false; }
+    showError('Something went wrong while checking this file. Please try again, or try re-exporting the PDF.');
+  };
+  // Transfer (not copy) the bytes: the page doesn't need them any more.
+  worker.postMessage({ bytes, settings }, [bytes.buffer]);
 });
+
+function showProgress(doneCount, total) {
+  const bar = document.getElementById('progress');
+  const label = `Checking page ${Math.min(doneCount + 1, total)} of ${total}…`;
+  if (bar) {
+    bar.value = doneCount;
+    bar.max = total;
+    document.getElementById('progress-label').textContent = label;
+    return;
+  }
+  $('result').innerHTML = `<div class="card">
+    <label class="progress"><span id="progress-label">${label}</span>
+      <progress id="progress" value="${doneCount}" max="${total}"></progress>
+    </label>
+    <p class="hint">Everything runs on your device. Big books take a little while.</p>
+  </div>`;
+}
 
 function render(s, issues, file) {
   const exp = `${s.expected.width}" x ${s.expected.height}"`;
@@ -89,7 +115,7 @@ function render(s, issues, file) {
 function renderIssue(g) {
   const where = g.pages.length === 0 ? 'Whole book'
     : g.pages.length === 1 ? `Page ${g.pages[0]}`
-    : `Pages ${formatPageList(g.pages)} (${g.pages.length} pages)`;
+    : `Pages ${formatPageList(g.pages)} (${g.pages.length} pages${g.worstPage != null ? `, worst on page ${g.worstPage}` : ''})`;
   const accuracy = g.accuracy === 'best-effort' ? ' · Best-effort check, may be wrong' : '';
   return `<li class="issue">
     <p><span class="where">${ICON[g.severity]} ${where}</span> — ${escapeHtml(g.message)}</p>

@@ -4,6 +4,7 @@
 import { PDFDocument, PDFName, PDFString, PDFHexString, StandardFonts, rgb, degrees } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const PT = 72;
@@ -36,8 +37,45 @@ export async function makeDoc(n = 24) {
 }
 
 // EB Garamond (SIL Open Font License 1.1), from the @fontsource/eb-garamond dev dependency.
-const GARAMOND = readFileSync(fileURLToPath(new URL(
-  '../../node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff', import.meta.url)));
+// @fontsource only ships WOFF; pdf-lib would embed those bytes as-is (not a valid PDF font file),
+// so convert to a plain TrueType file first, like a font installed on an author's computer.
+const GARAMOND = woffToTtf(readFileSync(fileURLToPath(new URL(
+  '../../node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff', import.meta.url))));
+
+/** WOFF 1.0 -> TTF/OTF: unpack the (zlib-compressed) tables into a plain sfnt file. */
+function woffToTtf(woff) {
+  const v = new DataView(woff.buffer, woff.byteOffset, woff.byteLength);
+  if (v.getUint32(0) !== 0x774f4646) throw new Error('not a WOFF file');
+  const numTables = v.getUint16(12);
+  const tables = [];
+  for (let i = 0; i < numTables; i++) {
+    const e = 44 + i * 20;
+    const [offset, compLength, origLength] = [v.getUint32(e + 4), v.getUint32(e + 8), v.getUint32(e + 12)];
+    const raw = woff.subarray(offset, offset + compLength);
+    tables.push({
+      tag: v.getUint32(e), checksum: v.getUint32(e + 16),
+      data: compLength < origLength ? inflateSync(raw) : raw,
+    });
+  }
+  const pad4 = (n) => (n + 3) & ~3;
+  const headerSize = 12 + numTables * 16;
+  const out = new Uint8Array(headerSize + tables.reduce((s, t) => s + pad4(t.data.length), 0));
+  const o = new DataView(out.buffer);
+  const entrySelector = Math.floor(Math.log2(numTables));
+  o.setUint32(0, v.getUint32(4)); // sfnt flavor
+  o.setUint16(4, numTables);
+  o.setUint16(6, 16 * 2 ** entrySelector);
+  o.setUint16(8, entrySelector);
+  o.setUint16(10, numTables * 16 - 16 * 2 ** entrySelector);
+  let at = headerSize;
+  tables.forEach((t, i) => {
+    const r = 12 + i * 16;
+    o.setUint32(r, t.tag); o.setUint32(r + 4, t.checksum); o.setUint32(r + 8, at); o.setUint32(r + 12, t.data.length);
+    out.set(t.data, at);
+    at += pad4(t.data.length);
+  });
+  return out;
+}
 
 /**
  * Embeds EB Garamond (a real font, so pages render real text).
@@ -72,6 +110,42 @@ export async function addEmbeddedText(doc, page, { font, text = 'The quick brown
   return f;
 }
 
+const SAMPLE = 'The quick brown fox jumps over the lazy dog';
+
+/**
+ * A book with real embedded text (EB Garamond) placed so its ink sits at the given margins,
+ * mirrored per page: odd pages bind on the left, even pages on the right.
+ * Each page gets a line touching the top margin, one touching the inside margin, one touching the
+ * outside margin, and one touching the bottom margin. Glyph shapes make the ink land within a few
+ * hundredths of an inch of the requested margin.
+ * @param {number} n pages
+ * @param {{ trim?: [number, number], bleed?: boolean, top?: number, bottom?: number,
+ *           inside?: number, outside?: number, size?: number }} [m] margins in inches from the trim line
+ */
+export async function makeTextBook(n, m = {}) {
+  const { trim = [6, 9], bleed = false, top = 0.75, bottom = 0.75, inside = 0.75, outside = 0.75, size = 11 } = m;
+  const ext = bleed ? 0.125 : 0;
+  const doc = await PDFDocument.create();
+  const font = await embedGaramond(doc);
+  const lineW = font.widthOfTextAtSize(SAMPLE, size) / PT; // inches
+  for (let i = 0; i < n; i++) {
+    const bindsLeft = i % 2 === 0; // page 1 (index 0) is a right-hand page
+    const w = trim[0] + ext;
+    const h = trim[1] + 2 * ext;
+    const page = doc.addPage([w * PT, h * PT]);
+    const trimX0 = bindsLeft ? 0 : ext; // the bleed is on the outside edge only
+    const left = trimX0 + (bindsLeft ? inside : outside);
+    const right = trimX0 + trim[0] - (bindsLeft ? outside : inside);
+    const draw = (text, x, baseline) => page.drawText(text, { font, size, x: x * PT, y: baseline * PT });
+    const sz = size / PT;
+    draw(SAMPLE, left, h - ext - top - 0.72 * sz);   // cap/ascender top at the top margin
+    draw(SAMPLE, left, h / 2 + 0.5);                  // left edge of the text block
+    draw(SAMPLE, right - lineW, h / 2);               // right edge of the text block
+    draw(SAMPLE, left, ext + bottom + 0.27 * sz);     // descenders at the bottom margin
+  }
+  return doc.save();
+}
+
 /** Adds an annotation of the given subtype ('Text' = sticky-note comment, 'Link', 'Highlight', ...). */
 export function addAnnotation(doc, page, subtype) {
   const ctx = doc.context;
@@ -102,8 +176,12 @@ export function addBookmark(doc) {
 
 /** Named fixtures from PLAN.md. */
 export const fixtures = {
-  /** 6x9, 120 pages, no bleed: passes all checks. */
-  'good-6x9-120p': () => makePdf(repeat(120, [6, 9])),
+  /** 6x9, 120 pages, no bleed, real embedded text inside safe margins: passes all checks. */
+  'good-6x9-120p': () => makeTextBook(120, { inside: 0.75, outside: 0.5, top: 0.75, bottom: 0.75 }),
+  /** 24 pages with text 0.15" from every edge (KDP needs 0.25" outside, 0.375" gutter). */
+  'tiny-margins': () => makeTextBook(24, { top: 0.15, bottom: 0.15, inside: 0.15, outside: 0.15 }),
+  /** 212 pages with text 0.31" from the binding (KDP needs 0.5" for 151-300 pages). */
+  'gutter-212p': () => makeTextBook(212, { inside: 0.31, outside: 0.5, top: 0.6, bottom: 0.6 }),
   /** 120 pages at 8.5x11 when the book is set up as 6x9. */
   'wrong-size': () => makePdf(repeat(120, [8.5, 11])),
   /** 24 pages; Helvetica text on pages 3-5. pdf-lib never embeds its standard fonts. */

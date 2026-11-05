@@ -100,7 +100,11 @@
   "app": {
     "_note": "OUR settings, not KDP rules. KDP publishes no measurement tolerance.",
     "sizeToleranceIn": 0.01,
-    "spreadMatchRatio": 0.05
+    "spreadMatchRatio": 0.05,
+    "renderDpi": 100,
+    "_renderDpiNote": "Pages are rendered at this DPI to find ink; margin measurements are accurate to about 1/renderDpi inch.",
+    "inkThreshold": 250,
+    "_inkThresholdNote": "A pixel counts as ink when its darkest RGB channel is below this (0-255). 250 ignores near-white paper tints."
   },
   "blankPages": {
     "maxConsecutiveStartOrMiddle": 4,
