@@ -6,7 +6,7 @@ import { loadPdf } from '../src/engine/loadPdf.js';
 import { runChecks, groupIssues } from '../src/engine/runChecks.js';
 import { checkFileRules } from '../src/engine/checks/fileRules.js';
 import {
-  fixtures, makeDoc, addEmbeddedFont, addAnnotation, addBookmark,
+  fixtures, makeDoc, embedGaramond, addEmbeddedText, saveWithSubsetTag, addAnnotation, addBookmark,
 } from './fixtures/make-fixtures.mjs';
 
 const specs = JSON.parse(readFileSync(new URL('../src/config/kdp-specs.json', import.meta.url)));
@@ -28,14 +28,32 @@ await test('unembedded font fails on each page it is used, grouped into one line
   assert.deepEqual(groups[0].pages, [3, 4, 5]);
 });
 
-await test('embedded fonts pass: TrueType, Type0 (follows DescendantFonts)', async () => {
+await test('real embedded font passes (Type0: follows DescendantFonts to the font file)', async () => {
   const doc = await makeDoc();
-  addEmbeddedFont(doc, doc.getPage(0), { name: 'Garamond' });
-  addEmbeddedFont(doc, doc.getPage(1), { name: 'NotoSans', type0: true });
+  const font = await addEmbeddedText(doc, doc.getPage(0));
+  await addEmbeddedText(doc, doc.getPage(1), { font });
   const pdf = await loadPdf(await doc.save());
-  assert.deepEqual(pdf.fonts.map((f) => [f.name, f.subtype, f.embedded, f.pages]),
-    [['Garamond', 'TrueType', true, [1]], ['NotoSans', 'Type0', true, [2]]]);
+  assert.equal(pdf.fonts.length, 1);
+  assert.match(pdf.fonts[0].name, /^EBGaramond-Regular/);
+  assert.deepEqual([pdf.fonts[0].subtype, pdf.fonts[0].embedded, pdf.fonts[0].pages], ['Type0', true, [1, 2]]);
   assert.deepEqual(runChecks(specs, pdf, SETTINGS), []);
+});
+
+await test('simple TrueType font with an embedded FontFile2 passes', async () => {
+  // pdf-lib only writes Type0 fonts, so build a simple TrueType font that reuses the real
+  // embedded Garamond font descriptor (and its FontFile2 stream).
+  const doc = await makeDoc();
+  const real = await embedGaramond(doc);
+  await doc.flush();
+  const ctx = doc.context;
+  const cid = ctx.lookup(ctx.lookup(real.ref).lookup(PDFName.of('DescendantFonts')).get(0));
+  const tt = ctx.register(ctx.obj({
+    Type: 'Font', Subtype: 'TrueType', BaseFont: 'EBGaramond-Regular',
+    FontDescriptor: cid.get(PDFName.of('FontDescriptor')),
+  }));
+  doc.getPage(0).node.setFontDictionary(PDFName.of('TT'), tt);
+  const pdf = await loadPdf(await doc.save());
+  assert.deepEqual(pdf.fonts.map((f) => [f.subtype, f.embedded]), [['TrueType', true]]);
 });
 
 await test('Type3 counts as embedded; Type0 with no font file does not', async () => {
@@ -56,12 +74,12 @@ await test('Type3 counts as embedded; Type0 with no font file does not', async (
 
 await test('subset fonts: one info line listing the fonts, prefix stripped', async () => {
   const doc = await makeDoc();
-  addEmbeddedFont(doc, doc.getPage(0), { name: 'ABCDEF+Garamond' });
-  addEmbeddedFont(doc, doc.getPage(1), { name: 'GHIJKL+NotoSans', type0: true });
-  const issues = await check(await doc.save());
+  const font = await embedGaramond(doc, { subset: true });
+  await addEmbeddedText(doc, doc.getPage(0), { font });
+  const issues = await check(await saveWithSubsetTag(doc, font, 'ABCDEF'));
   assert.equal(issues.length, 1);
   assert.equal(issues[0].severity, 'info');
-  assert.match(issues[0].message, /These 2 fonts .*: Garamond, NotoSans/);
+  assert.match(issues[0].message, /This font is embedded as a subset .*: EBGaramond-Regular\. /);
 });
 
 await test('fonts inside a placed PDF (Form XObject) are found', async () => {

@@ -2,7 +2,8 @@
 // Import the builders in tests, or run `node tests/fixtures/make-fixtures.mjs` to write them to tests/fixtures/out/.
 // Later milestones add more fixtures here (tiny-margins, low-dpi, unembedded-font, ...).
 import { PDFDocument, PDFName, PDFString, PDFHexString, StandardFonts, rgb, degrees } from 'pdf-lib';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import fontkit from '@pdf-lib/fontkit';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const PT = 72;
@@ -34,30 +35,41 @@ export async function makeDoc(n = 24) {
   return PDFDocument.load(await makePdf(repeat(n, [6, 9])));
 }
 
+// EB Garamond (SIL Open Font License 1.1), from the @fontsource/eb-garamond dev dependency.
+const GARAMOND = readFileSync(fileURLToPath(new URL(
+  '../../node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff', import.meta.url)));
+
 /**
- * Adds a font that counts as embedded (a FontDescriptor with a FontFile2 stream) to a page's resources.
- * The font program is dummy bytes: enough for structure checks, not for rendering.
- * @param {{ name?:string, type0?:boolean }} [opts] name like 'ABCDEF+Garamond' marks a subset
+ * Embeds EB Garamond (a real font, so pages render real text).
+ * @returns {Promise<import('pdf-lib').PDFFont>}
  */
-export function addEmbeddedFont(doc, page, { name = 'Garamond', type0 = false } = {}) {
-  const ctx = doc.context;
-  const fontFile = ctx.register(ctx.flateStream(new Uint8Array([0, 1, 0, 0])));
-  const descriptor = ctx.register(ctx.obj({
-    Type: 'FontDescriptor', FontName: name, Flags: 32, FontBBox: [0, 0, 1000, 1000],
-    ItalicAngle: 0, Ascent: 800, Descent: -200, CapHeight: 700, StemV: 80, FontFile2: fontFile,
-  }));
-  let font;
-  if (type0) {
-    const cid = ctx.register(ctx.obj({
-      Type: 'Font', Subtype: 'CIDFontType2', BaseFont: name, FontDescriptor: descriptor,
-      CIDSystemInfo: { Registry: PDFString.of('Adobe'), Ordering: PDFString.of('Identity'), Supplement: 0 },
-    }));
-    font = ctx.register(ctx.obj({ Type: 'Font', Subtype: 'Type0', BaseFont: name, Encoding: 'Identity-H', DescendantFonts: [cid] }));
-  } else {
-    font = ctx.register(ctx.obj({ Type: 'Font', Subtype: 'TrueType', BaseFont: name, FontDescriptor: descriptor }));
-  }
-  page.node.setFontDictionary(PDFName.of(`F${name.replace(/\W/g, '')}`), font);
-  return font;
+export async function embedGaramond(doc, { subset = false } = {}) {
+  doc.registerFontkit(fontkit);
+  return doc.embedFont(GARAMOND, { subset });
+}
+
+/**
+ * Saves the document with `font` renamed 'TAG+EBGaramond-Regular', the way InDesign and Word
+ * name subset fonts (pdf-lib itself doesn't add the prefix).
+ */
+export async function saveWithSubsetTag(doc, font, tag = 'ABCDEF') {
+  await doc.flush(); // pdf-lib writes font objects lazily; make them exist before renaming
+  const name = PDFName.of(`${tag}+EBGaramond-Regular`);
+  const type0 = doc.context.lookup(font.ref);
+  type0.set(PDFName.of('BaseFont'), name);
+  doc.context.lookup(type0.lookup(PDFName.of('DescendantFonts')).get(0)).set(PDFName.of('BaseFont'), name);
+  return doc.save();
+}
+
+/**
+ * Draws real, embedded text on a page.
+ * @param {{ font?: import('pdf-lib').PDFFont, text?: string, x?: number, y?: number, size?: number }} [opts]
+ *   x/y in inches from the bottom-left corner.
+ */
+export async function addEmbeddedText(doc, page, { font, text = 'The quick brown fox', x = 1.5, y = 4.5, size = 11 } = {}) {
+  const f = font ?? await embedGaramond(doc);
+  page.drawText(text, { font: f, x: x * PT, y: y * PT, size });
+  return f;
 }
 
 /** Adds an annotation of the given subtype ('Text' = sticky-note comment, 'Link', 'Highlight', ...). */
