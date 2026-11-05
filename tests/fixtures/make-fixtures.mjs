@@ -1,7 +1,10 @@
 // Test fixture PDFs, generated with pdf-lib.
 // Import the builders in tests, or run `node tests/fixtures/make-fixtures.mjs` to write them to tests/fixtures/out/.
 // Later milestones add more fixtures here (tiny-margins, low-dpi, unembedded-font, ...).
-import { PDFDocument, PDFName, PDFString, PDFHexString, StandardFonts, rgb, degrees } from 'pdf-lib';
+import {
+  PDFDocument, PDFName, PDFString, PDFHexString, StandardFonts, rgb, degrees,
+  pushGraphicsState, popGraphicsState, concatTransformationMatrix, drawObject,
+} from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
@@ -146,6 +149,32 @@ export async function makeTextBook(n, m = {}) {
   return doc.save();
 }
 
+/**
+ * Draws an image of pxW x pxH pixels at w x h inches, with its bottom-left corner at (x, y) inches.
+ * So its resolution is pxW / w DPI. `mask: true` makes a 1-bit stencil mask (line art).
+ */
+export function addImage(doc, page, { pxW, pxH, x = 1, y = 1, w, h, mask = false }) {
+  const ctx = doc.context;
+  let data;
+  let dict;
+  if (mask) {
+    const row = Math.ceil(pxW / 8);
+    data = new Uint8Array(row * pxH).map((_, i) => (Math.floor(i / row) % 2 ? 0xaa : 0x55));
+    dict = { Type: 'XObject', Subtype: 'Image', Width: pxW, Height: pxH, ImageMask: true, BitsPerComponent: 1 };
+  } else {
+    data = new Uint8Array(pxW * pxH * 3).map((_, i) => (i * 7) % 256); // a busy pattern, not a flat fill
+    dict = { Type: 'XObject', Subtype: 'Image', Width: pxW, Height: pxH, ColorSpace: 'DeviceRGB', BitsPerComponent: 8 };
+  }
+  const ref = ctx.register(ctx.flateStream(data, dict));
+  const name = page.node.newXObject('Img', ref);
+  page.pushOperators(
+    pushGraphicsState(),
+    concatTransformationMatrix(w * PT, 0, 0, h * PT, x * PT, y * PT),
+    drawObject(name),
+    popGraphicsState(),
+  );
+}
+
 /** Adds an annotation of the given subtype ('Text' = sticky-note comment, 'Link', 'Highlight', ...). */
 export function addAnnotation(doc, page, subtype) {
   const ctx = doc.context;
@@ -184,6 +213,12 @@ export const fixtures = {
   'gutter-212p': () => makeTextBook(212, { inside: 0.31, outside: 0.5, top: 0.6, bottom: 0.6 }),
   /** 120 pages at 8.5x11 when the book is set up as 6x9. */
   'wrong-size': () => makePdf(repeat(120, [8.5, 11])),
+  /** 24-page text book; page 5 has a 300 x 450 px image shown at 2" x 3" = 150 DPI. */
+  'low-dpi': async () => {
+    const doc = await PDFDocument.load(await makeTextBook(24));
+    addImage(doc, doc.getPage(4), { pxW: 300, pxH: 450, x: 2, y: 3, w: 2, h: 3 });
+    return doc.save();
+  },
   /** 24 pages; Helvetica text on pages 3-5. pdf-lib never embeds its standard fonts. */
   'unembedded-font': async () => {
     const doc = await makeDoc();

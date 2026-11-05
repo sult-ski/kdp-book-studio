@@ -8,9 +8,9 @@ const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked
 const ICON = { fail: '❌', warn: '⚠️', info: 'ℹ️' };
 let worker; // the preflight Web Worker for the current check
 // Checks not built yet. Shown so a clean result never implies more than we actually checked.
-const NOT_CHECKED_YET = ['image resolution', 'bleed artwork', 'blank pages', 'minimum font size'];
+const NOT_CHECKED_YET = ['bleed artwork', 'blank pages', 'minimum font size'];
 // KDP rules we can't check reliably. Listed so authors know to check these themselves.
-const NOT_SUPPORTED = ['crop or trim marks drawn on the page', 'invisible objects', 'placeholder text', 'metadata'];
+const NOT_SUPPORTED = ['crop or trim marks drawn on the page', 'resolution of images used as patterns or textures', 'invisible objects', 'placeholder text', 'metadata'];
 
 // Fill dropdowns from the config, never from hard-coded lists.
 $('trim').innerHTML = listTrims(specs)

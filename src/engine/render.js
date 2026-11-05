@@ -1,5 +1,6 @@
-// Renders pages with pdf.js and returns pixels + text boxes. No DOM:
+// Inspects pages with pdf.js: image placements, rendered pixels and text boxes. No DOM:
 // the pdf.js module and its options are passed in, so this runs in a Web Worker and in Node.
+import { findImagePlacements } from './images.js';
 
 /**
  * @param {typeof import('pdfjs-dist')} pdfjs
@@ -12,30 +13,65 @@ export async function openWithPdfjs(pdfjs, bytes, docOptions = {}) {
 }
 
 /**
- * Renders one page for printing at `dpi` on a white background.
- * @returns {Promise<{ widthPx:number, heightPx:number, dpi:number, rgba:Uint8ClampedArray,
- *   textRects:Array<[number, number, number, number]> }>} textRects are [x0, y0, x1, y1] in pixels, top-left origin
+ * Inspects one page as it will print: where images are placed, and (if `render`) the rendered pixels.
+ * @param {{ dpi:number, render:boolean }} opts
+ * @returns {Promise<{ images: Array<ImagePlacement>, render: null | { widthPx:number, heightPx:number, dpi:number,
+ *   rgba:Uint8ClampedArray, textRects:Array<[number, number, number, number]> } }>}
+ *   ImagePlacement = { pxW, pxH, widthIn, heightIn, bboxIn:{x,y,width,height}, kind }, inches with a
+ *   top-left origin on the upright page; textRects are [x0, y0, x1, y1] in pixels, top-left origin
  */
-export async function renderPage(pdfjs, doc, pageNumber, dpi) {
+export async function inspectPage(pdfjs, doc, pageNumber, { dpi, render }) {
   const page = await doc.getPage(pageNumber);
   try {
-    const viewport = page.getViewport({ scale: dpi / 72 });
-    const widthPx = Math.ceil(viewport.width);
-    const heightPx = Math.ceil(viewport.height);
-    const target = doc.canvasFactory.create(widthPx, heightPx);
-    try {
-      await page.render({ canvas: target.canvas, viewport, intent: 'print', background: 'white' }).promise;
-      const rgba = target.context.getImageData(0, 0, widthPx, heightPx).data;
-      const text = await page.getTextContent();
-      const textRects = text.items
-        .filter((item) => item.str && item.str.trim())
-        .map((item) => textRect(pdfjs, viewport, item));
-      return { widthPx, heightPx, dpi, rgba, textRects };
-    } finally {
-      doc.canvasFactory.destroy(target);
-    }
+    const opList = await page.getOperatorList({ intent: 'print' });
+    const images = placeImages(pdfjs, page, opList);
+    return { images, render: render ? await renderPixels(pdfjs, doc, page, dpi) : null };
   } finally {
     page.cleanup();
+  }
+}
+
+/** Image placements in page inches (top-left origin, after page rotation). */
+function placeImages(pdfjs, page, opList) {
+  const viewport = page.getViewport({ scale: 1 }); // 1 unit = 1 pt
+  const lookup = (id) => {
+    for (const store of [page.objs, page.commonObjs]) {
+      try { if (store.has(id)) return store.get(id); } catch { /* not decoded */ }
+    }
+    return null;
+  };
+  return findImagePlacements(opList, pdfjs.OPS, lookup).map(({ pxW, pxH, ctm, kind }) => {
+    const corners = [[0, 0], [1, 0], [0, 1], [1, 1]]
+      .map(([u, v]) => viewport.convertToViewportPoint(ctm[0] * u + ctm[2] * v + ctm[4], ctm[1] * u + ctm[3] * v + ctm[5]));
+    const xs = corners.map((c) => c[0] / 72);
+    const ys = corners.map((c) => c[1] / 72);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    return {
+      pxW, pxH, kind,
+      widthIn: Math.hypot(ctm[0], ctm[1]) / 72,   // displayed length of the image's x side
+      heightIn: Math.hypot(ctm[2], ctm[3]) / 72,  // displayed length of the image's y side
+      bboxIn: { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y },
+    };
+  });
+}
+
+/** Renders the page for printing at `dpi` on a white background, plus text boxes. */
+async function renderPixels(pdfjs, doc, page, dpi) {
+  const viewport = page.getViewport({ scale: dpi / 72 });
+  const widthPx = Math.ceil(viewport.width);
+  const heightPx = Math.ceil(viewport.height);
+  const target = doc.canvasFactory.create(widthPx, heightPx);
+  try {
+    await page.render({ canvas: target.canvas, viewport, intent: 'print', background: 'white' }).promise;
+    const rgba = target.context.getImageData(0, 0, widthPx, heightPx).data;
+    const text = await page.getTextContent();
+    const textRects = text.items
+      .filter((item) => item.str && item.str.trim())
+      .map((item) => textRect(pdfjs, viewport, item));
+    return { widthPx, heightPx, dpi, rgba, textRects };
+  } finally {
+    doc.canvasFactory.destroy(target);
   }
 }
 
