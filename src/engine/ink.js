@@ -60,3 +60,21 @@ export function scanEdge(render, pageIn, edge, depthIn, threshold) {
   }
   return hits;
 }
+
+/**
+ * Is there any ink inside a pixel rectangle (default: the whole page)?
+ * @param {[number, number, number, number]} [rectPx] [x0, y0, x1, y1], clamped to the page
+ */
+export function hasInk(render, threshold, rectPx) {
+  const { widthPx: W, heightPx: H, rgba } = render;
+  const [x0, y0, x1, y1] = rectPx
+    ? [Math.max(0, Math.floor(rectPx[0])), Math.max(0, Math.floor(rectPx[1])), Math.min(W, Math.ceil(rectPx[2])), Math.min(H, Math.ceil(rectPx[3]))]
+    : [0, 0, W, H];
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * W + x) * 4;
+      if (Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < threshold) return true;
+    }
+  }
+  return false;
+}

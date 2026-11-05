@@ -1,14 +1,14 @@
 // Loads a PDF from bytes and reads per-page and file facts with pdf-lib.
 // Runs in browser and Node (used by tests).
 import { PDFDocument } from 'pdf-lib';
-import { readFonts, readFileFacts } from './pdfFacts.js';
+import { readFonts, readFileFacts, readTransparency } from './pdfFacts.js';
 
 const PT_PER_INCH = 72;
 
 /**
  * @param {Uint8Array|ArrayBuffer} bytes
  * @returns {Promise<{ pageCount:number, encrypted:boolean, sizeBytes:number, pages:Array,
- *   fonts:Array|null, file:object|null, factErrors:string[], error?:string }>}
+ *   fonts:Array|null, file:object|null, transparencyPages:number[]|null, factErrors:string[], error?:string }>}
  */
 export async function loadPdf(bytes) {
   const sizeBytes = bytes.byteLength;
@@ -23,7 +23,7 @@ export async function loadPdf(bytes) {
     const error = looksEncrypted(bytes)
       ? 'This PDF is locked or encrypted, so it could not be opened. KDP does not accept locked files either. Remove the password or security in your PDF tool, then export again.'
       : 'This file could not be read as a PDF. It may be damaged; try exporting it again.';
-    return { pageCount: 0, encrypted: false, sizeBytes, pages: [], fonts: null, file: null, factErrors: [], error };
+    return { pageCount: 0, encrypted: false, sizeBytes, pages: [], fonts: null, file: null, transparencyPages: null, factErrors: [], error };
   }
 
   const pages = pdfPages.map((page, i) => {
@@ -50,8 +50,9 @@ export async function loadPdf(bytes) {
   };
   const fonts = attempt('fonts', () => readFonts(doc));
   const file = attempt('file', () => readFileFacts(doc));
+  const transparencyPages = attempt('transparency', () => readTransparency(doc));
 
-  return { pageCount: pages.length, encrypted: doc.isEncrypted, sizeBytes, pages, fonts, file, factErrors };
+  return { pageCount: pages.length, encrypted: doc.isEncrypted, sizeBytes, pages, fonts, file, transparencyPages, factErrors };
 }
 
 /** Looks for an /Encrypt entry in the first and last 1 MB (where trailers live). */

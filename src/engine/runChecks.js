@@ -3,6 +3,7 @@ import { checkPageSize } from './checks/pageSize.js';
 import { checkPageCount } from './checks/pageCount.js';
 import { checkFonts } from './checks/fonts.js';
 import { checkFileRules } from './checks/fileRules.js';
+import { checkTransparency } from './checks/transparency.js';
 
 const SEVERITY_ORDER = { fail: 0, warn: 1, info: 2 };
 
@@ -18,6 +19,7 @@ export function runChecks(specs, pdf, settings) {
     ...checkPageSize(specs, pdf, settings),
     ...checkFonts(specs, pdf),
     ...checkFileRules(specs, pdf),
+    ...checkTransparency(specs, pdf),
   ];
   return sortIssues(issues);
 }

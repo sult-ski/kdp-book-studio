@@ -98,3 +98,53 @@ export function readFileFacts(doc) {
 
   return { encrypted: doc.isEncrypted, annotations, hasFormFields, hasJavaScript, hasBookmarks };
 }
+
+/**
+ * Pages that use transparency: see-through effects (opacity below 1), soft masks, blend modes
+ * other than Normal, or images with a soft mask (alpha channel). Includes placed PDFs (Form XObjects).
+ * @param {import('pdf-lib').PDFDocument} doc
+ * @returns {number[]} page numbers
+ */
+export function readTransparency(doc) {
+  const ctx = doc.context;
+  const num = (o) => (o && typeof o.asNumber === 'function' ? o.asNumber() : undefined);
+
+  const gsIsTransparent = (gs) => {
+    const ca = num(gs.lookup(N('ca')));
+    const CA = num(gs.lookup(N('CA')));
+    const smask = gs.lookup(N('SMask'));
+    const bm = gs.lookup(N('BM'));
+    const bmName = bm instanceof PDFName ? bm.decodeText()
+      : bm instanceof PDFArray && bm.size() ? nameText(ctx.lookup(bm.get(0))) : undefined;
+    return (ca !== undefined && ca < 1) || (CA !== undefined && CA < 1)
+      || (smask !== undefined && smask !== N('None'))
+      || (bmName !== undefined && bmName !== 'Normal' && bmName !== 'Compatible');
+  };
+
+  const usesTransparency = (resources, seen) => {
+    if (!(resources instanceof PDFDict) || seen.has(resources)) return false;
+    seen.add(resources);
+    const states = resources.lookup(N('ExtGState'));
+    if (states instanceof PDFDict) {
+      for (const [, v] of states.entries()) {
+        const gs = ctx.lookup(v);
+        if (gs instanceof PDFDict && gsIsTransparent(gs)) return true;
+      }
+    }
+    const xobjects = resources.lookup(N('XObject'));
+    if (xobjects instanceof PDFDict) {
+      for (const [, v] of xobjects.entries()) {
+        const xo = ctx.lookup(v);
+        if (!(xo instanceof PDFStream)) continue;
+        const subtype = xo.dict.get(N('Subtype'));
+        if (subtype === N('Image') && xo.dict.has(N('SMask'))) return true;
+        if (subtype === N('Form') && usesTransparency(xo.dict.lookup(N('Resources')), seen)) return true;
+      }
+    }
+    return false;
+  };
+
+  return doc.getPages()
+    .map((page, i) => (usesTransparency(page.node.Resources(), new Set()) ? i + 1 : null))
+    .filter((n) => n !== null);
+}

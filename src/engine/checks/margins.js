@@ -4,6 +4,7 @@
 // With bleed, distances are measured from the trim line (bleed is added at top, bottom and outside only).
 import { expectedPageSize, gutterFor, outsideMarginFor, sourceUrl } from '../specs.js';
 import { scanEdge } from '../ink.js';
+import { artAtEdgeWithoutBleed, artShortOfBleedEdge } from './bleed.js';
 import { inches } from '../format.js';
 
 const EPS = 1e-6;
@@ -42,9 +43,22 @@ export function checkPageMargins(specs, page, render, { settings, printedPageCou
       if (!hit) continue;
       const distance = hit.insetIn - e.offset; // from the trim line (or binding edge)
       if (distance >= e.required - tolerance - EPS) continue;
-      // With bleed, art that runs to the page edge is deliberate full-bleed art, which is allowed.
-      // That includes art running into the binding edge (e.g. a full-page picture); text there still fails.
-      if (kind === 'art' && settings.bleed && hit.insetIn <= tolerance + EPS) continue;
+      if (kind === 'art') {
+        const atEdge = hit.insetIn <= specs.app.edgeInkIn + EPS;
+        // No bleed, but art touches the page edge: a bleed problem, reported instead of a margin warning.
+        if (!settings.bleed && atEdge) {
+          issues.push(artAtEdgeWithoutBleed(specs, { e, hit, page, bbox: bboxIn(hit, render), trimKey: settings.trim }));
+          continue;
+        }
+        // With bleed, art that runs to the page edge is deliberate full-bleed art, which is allowed.
+        // That includes art running into the binding edge (e.g. a full-page picture); text there still fails.
+        if (settings.bleed && atEdge) continue;
+        // With bleed, art that reaches the trim line but stops short of the page edge: bleed is too short.
+        if (settings.bleed && e.edge !== 'inside' && hit.insetIn <= e.offset + specs.app.edgeInkIn + EPS) {
+          issues.push(artShortOfBleedEdge(specs, { e, hit, page, bbox: bboxIn(hit, render) }));
+          continue;
+        }
+      }
       issues.push(makeIssue({ e, kind, distance, hit, page, render, settings, printedPageCount, source }));
     }
   }
@@ -78,8 +92,7 @@ function makeIssue({ e, kind, distance: raw, hit, page, render, settings, printe
   const why = e.edge === 'inside'
     ? `Your book has ${printedPageCount} pages, so KDP requires a ${req} inside margin`
     : `KDP requires at least ${req} from ${from}${settings.bleed ? ' in books with bleed' : ''}`;
-  const [x0, y0, x1, y1] = hit.bboxPx;
-  const bbox = { x: x0 / render.dpi, y: y0 / render.dpi, width: (x1 - x0) / render.dpi, height: (y1 - y0) / render.dpi };
+  const bbox = bboxIn(hit, render);
   const base = {
     id: `margins-${e.edge}-${kind}-p${page.number}`,
     checkId: 'margins',
@@ -110,4 +123,10 @@ function makeIssue({ e, kind, distance: raw, hit, page, render, settings, printe
       ? `Move or shrink it so it stays at least ${req} from ${e.edge === 'inside' ? 'the binding edge' : 'the edge'}${e.edge !== 'inside' ? '. If it is meant to run off the page, choose "Bleed" and extend it past the page edge' : ''}.`
       : `Move or shrink it so it stays at least ${req} from the trim line, or, if it is meant to run off the page, extend it all the way to the page edge.`,
   };
+}
+
+/** Pixel bbox of a scan hit -> inches, top-left origin. */
+function bboxIn(hit, render) {
+  const [x0, y0, x1, y1] = hit.bboxPx;
+  return { x: x0 / render.dpi, y: y0 / render.dpi, width: (x1 - x0) / render.dpi, height: (y1 - y0) / render.dpi };
 }

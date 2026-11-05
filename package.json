@@ -10,7 +10,7 @@
     "prebuild": "npm run assets",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/m1.test.mjs && node tests/m2.test.mjs && node tests/m3.test.mjs && node tests/m4.test.mjs && node tests/m5.test.mjs",
+    "test": "node tests/m1.test.mjs && node tests/m2.test.mjs && node tests/m3.test.mjs && node tests/m4.test.mjs && node tests/m5.test.mjs && node tests/m6.test.mjs",
     "fixtures": "node tests/fixtures/make-fixtures.mjs"
   },
   "dependencies": {

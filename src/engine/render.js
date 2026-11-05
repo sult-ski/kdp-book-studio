@@ -16,7 +16,8 @@ export async function openWithPdfjs(pdfjs, bytes, docOptions = {}) {
  * Inspects one page as it will print: where images are placed, and (if `render`) the rendered pixels.
  * @param {{ dpi:number, render:boolean }} opts
  * @returns {Promise<{ images: Array<ImagePlacement>, render: null | { widthPx:number, heightPx:number, dpi:number,
- *   rgba:Uint8ClampedArray, textRects:Array<[number, number, number, number]> } }>}
+ *   rgba:Uint8ClampedArray, textRects:Array<[number, number, number, number]>,
+ *   textItems:Array<{ str:string, sizePt:number, rect:[number, number, number, number] }> } }>}
  *   ImagePlacement = { pxW, pxH, widthIn, heightIn, bboxIn:{x,y,width,height}, kind }, inches with a
  *   top-left origin on the upright page; textRects are [x0, y0, x1, y1] in pixels, top-left origin
  */
@@ -66,10 +67,15 @@ async function renderPixels(pdfjs, doc, page, dpi) {
     await page.render({ canvas: target.canvas, viewport, intent: 'print', background: 'white' }).promise;
     const rgba = target.context.getImageData(0, 0, widthPx, heightPx).data;
     const text = await page.getTextContent();
-    const textRects = text.items
+    const textItems = text.items
       .filter((item) => item.str && item.str.trim())
-      .map((item) => textRect(pdfjs, viewport, item));
-    return { widthPx, heightPx, dpi, rgba, textRects };
+      .map((item) => ({
+        str: item.str,
+        // Printed font size in points: the text matrix (already combined with the CTM by pdf.js).
+        sizePt: Math.hypot(item.transform[2], item.transform[3]),
+        rect: textRect(pdfjs, viewport, item),
+      }));
+    return { widthPx, heightPx, dpi, rgba, textRects: textItems.map((t) => t.rect), textItems };
   } finally {
     doc.canvasFactory.destroy(target);
   }

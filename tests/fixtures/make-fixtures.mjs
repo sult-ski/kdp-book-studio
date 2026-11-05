@@ -123,10 +123,11 @@ const SAMPLE = 'The quick brown fox jumps over the lazy dog';
  * hundredths of an inch of the requested margin.
  * @param {number} n pages
  * @param {{ trim?: [number, number], bleed?: boolean, top?: number, bottom?: number,
- *           inside?: number, outside?: number, size?: number }} [m] margins in inches from the trim line
+ *           inside?: number, outside?: number, size?: number, blank?: number[] }} [m]
+ *   margins in inches from the trim line; `blank` lists page numbers to leave empty
  */
 export async function makeTextBook(n, m = {}) {
-  const { trim = [6, 9], bleed = false, top = 0.75, bottom = 0.75, inside = 0.75, outside = 0.75, size = 11 } = m;
+  const { trim = [6, 9], bleed = false, top = 0.75, bottom = 0.75, inside = 0.75, outside = 0.75, size = 11, blank = [] } = m;
   const ext = bleed ? 0.125 : 0;
   const doc = await PDFDocument.create();
   const font = await embedGaramond(doc);
@@ -136,6 +137,7 @@ export async function makeTextBook(n, m = {}) {
     const w = trim[0] + ext;
     const h = trim[1] + 2 * ext;
     const page = doc.addPage([w * PT, h * PT]);
+    if (blank.includes(i + 1)) continue;
     const trimX0 = bindsLeft ? 0 : ext; // the bleed is on the outside edge only
     const left = trimX0 + (bindsLeft ? inside : outside);
     const right = trimX0 + trim[0] - (bindsLeft ? outside : inside);
@@ -219,6 +221,15 @@ export const fixtures = {
     addImage(doc, doc.getPage(4), { pxW: 300, pxH: 450, x: 2, y: 3, w: 2, h: 3 });
     return doc.save();
   },
+  /** Bleed book; page 1 has a band across the top that stops at the trim line instead of the page edge. */
+  'bleed-art-short': async () => {
+    const doc = await PDFDocument.load(await makeTextBook(24, { bleed: true, top: 1.2 }));
+    const page = doc.getPage(0);
+    page.drawRectangle({ x: 0, y: (9.25 - 0.125 - 0.8) * PT, width: 6.125 * PT, height: 0.8 * PT, color: rgb(0.2, 0.4, 0.7) });
+    return doc.save();
+  },
+  /** 24-page text book with pages 5-10 empty: 6 blank pages in a row (KDP allows 4 mid-book). */
+  '6-consecutive-blanks': () => makeTextBook(24, { blank: [5, 6, 7, 8, 9, 10] }),
   /** 24 pages; Helvetica text on pages 3-5. pdf-lib never embeds its standard fonts. */
   'unembedded-font': async () => {
     const doc = await makeDoc();

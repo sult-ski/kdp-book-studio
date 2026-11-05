@@ -112,7 +112,9 @@ await test('wrong-size pages still get their images checked', async () => {
   for (let n = 0; n < 24; n++) doc.addPage(n === 3 ? [8.5 * 72, 11 * 72] : [6 * 72, 9 * 72]);
   addImage(doc, doc.getPage(3), { pxW: 400, pxH: 400, x: 2, y: 3, w: 2, h: 2 });
   const r = await preflight(specs, await doc.save(), SETTINGS, env);
-  assert.deepEqual(r.issues.map((i) => i.checkId).sort(), ['images', 'pageSize']);
+  // (The other 23 pages are empty, so the blank-pages check also speaks up; not what this test is about.)
+  assert.deepEqual(r.issues.filter((i) => i.checkId !== 'blankPages').map((i) => [i.checkId, i.page]).sort(),
+    [['images', 4], ['pageSize', 4]]);
 });
 
 await test('same low-res image on several pages groups into one line showing the worst page', async () => {
