@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KDP Book Studio — Preflight Checker</title>
+  <link rel="stylesheet" href="/src/ui/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>KDP Preflight Checker</h1>
+    <p class="lead">Check your paperback interior PDF against KDP rules. Your file never leaves your device.</p>
+  </header>
+
+  <main>
+    <form id="settings">
+      <label>Interior PDF
+        <input type="file" id="file" accept="application/pdf" required />
+      </label>
+      <label>Trim size
+        <select id="trim"></select>
+      </label>
+      <label>Ink and paper
+        <select id="inkPaper"></select>
+      </label>
+      <fieldset>
+        <legend>Bleed</legend>
+        <label class="inline"><input type="radio" name="bleed" value="no" checked /> No bleed</label>
+        <label class="inline"><input type="radio" name="bleed" value="yes" /> Bleed</label>
+      </fieldset>
+      <details>
+        <summary>Advanced</summary>
+        <label>Page size tolerance (inches)
+          <input type="number" id="tolerance" min="0" max="0.1" step="0.001" inputmode="decimal" />
+          <span class="hint">How far a page may be from the exact size before we flag it. This is our setting, not a KDP rule.</span>
+        </label>
+      </details>
+      <button type="submit">Check my PDF</button>
+    </form>
+
+    <section id="result" aria-live="polite"></section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

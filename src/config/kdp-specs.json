@@ -1,0 +1,110 @@
+{
+  "_meta": {
+    "description": "KDP paperback interior specs. The ONLY place specs live. All lengths in inches.",
+    "lastVerified": "2026-11-05",
+    "sources": {
+      "submission": "https://kdp.amazon.com/en_US/help/topic/G201857950",
+      "trimBleedMargins": "https://kdp.amazon.com/en_US/help/topic/GVBQ3CMEQW3W2VL6",
+      "saveManuscript": "https://kdp.amazon.com/en_US/help/topic/G202145060",
+      "fixFormatting": "https://kdp.amazon.com/en_US/help/topic/G201834260"
+    }
+  },
+  "bleed": {
+    "addWidth": 0.125,
+    "addHeight": 0.25,
+    "extendBeyondTrim": 0.125,
+    "edges": ["top", "bottom", "outside"],
+    "source": "submission",
+    "lastVerified": "2026-11-05"
+  },
+  "margins": {
+    "outsideMin": { "noBleed": 0.25, "bleed": 0.375 },
+    "appliesTo": ["top", "bottom", "outside"],
+    "gutterByPageCount": [
+      { "min": 24,  "max": 150, "inside": 0.375 },
+      { "min": 151, "max": 300, "inside": 0.5 },
+      { "min": 301, "max": 500, "inside": 0.625 },
+      { "min": 501, "max": 700, "inside": 0.75 },
+      { "min": 701, "max": 828, "inside": 0.875 }
+    ],
+    "source": "submission",
+    "lastVerified": "2026-11-05"
+  },
+  "pageCount": {
+    "roundUpToEven": true,
+    "inkPaperTypes": {
+      "bw_white":       "Black ink, white paper",
+      "bw_cream":       "Black ink, cream paper",
+      "bw_groundwood":  "Black ink, groundwood paper",
+      "color_standard": "Standard color, white paper",
+      "color_premium":  "Premium color, white paper"
+    },
+    "_rangesNote": "[min, max] per inkPaperType, in the order listed above. null = not available.",
+    "ranges": {
+      "5x8":       [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.06x7.81": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.25x8":    [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.5x8.5":   [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "6x9":       [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "6.14x9.21": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "6.69x9.61": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "7x10":      [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "7.44x9.69": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "7.5x9.25":  [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "8x10":      [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "8.25x6":    [[24,800],[24,750],[24,784],[72,600],[24,800]],
+      "8.25x8.25": [[24,800],[24,750],[24,784],[72,600],[24,800]],
+      "8.27x11.69":[[24,780],[24,730],[24,764],null,[24,590]],
+      "8.5x8.5":   [[24,590],[24,550],[24,578],[72,600],[24,590]],
+      "8.5x11":    [[24,590],[24,550],[24,578],[72,600],[24,590]],
+      "4.06x7.17": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "4.13x6.81": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "4.41x6.85": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5x7.4":     [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.04x7.17": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.83x8.27": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.98x8.58": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "5.98x8.94": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "7.17x10.12":[[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "7.17x8.11": [[24,828],[24,776],[24,812],[72,600],[24,828]],
+      "8.27x10.12":[[24,780],[24,730],[24,764],[72,600],[24,780]]
+    },
+    "_conflict": "KDP's page lists A4 (8.27x11.69) twice: premium color max 590 in one table and 780 in the other. Using the stricter value, 590, until confirmed.",
+    "source": "submission",
+    "lastVerified": "2026-11-05"
+  },
+  "images": {
+    "minDpi": 300,
+    "recommendedMaxDpi": 600,
+    "appFailBelowDpi": 200,
+    "_note": "appFailBelowDpi is OUR threshold, not a KDP rule. KDP only states 300 minimum.",
+    "source": "submission",
+    "lastVerified": "2026-11-05"
+  },
+  "fonts": {
+    "mustEmbed": true,
+    "preferFullOverSubset": true,
+    "minSizePt": 7,
+    "source": "submission",
+    "lastVerified": "2026-11-05"
+  },
+  "file": {
+    "maxSizeMB": 650,
+    "noEncryption": true,
+    "singlePagesOnly": true,
+    "disallowed": ["crop marks", "trim marks", "bookmarks", "comments", "annotations", "invisible objects", "placeholder text"],
+    "source": "saveManuscript",
+    "lastVerified": "2026-11-05"
+  },
+  "app": {
+    "_note": "OUR settings, not KDP rules. KDP publishes no measurement tolerance.",
+    "sizeToleranceIn": 0.01,
+    "spreadMatchRatio": 0.05
+  },
+  "blankPages": {
+    "maxConsecutiveStartOrMiddle": 4,
+    "maxConsecutiveEnd": 10,
+    "source": "saveManuscript",
+    "lastVerified": "2026-11-05"
+  }
+}
