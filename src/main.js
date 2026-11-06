@@ -1,4 +1,6 @@
 // The form, the worker and progress. The report itself lives in ui/report.js.
+import '@fontsource-variable/inter/opsz.css';
+import './ui/styles.css';
 import specs from './config/kdp-specs.json';
 import { listTrims, listInkPaper } from './engine/specs.js';
 import { renderReport, esc } from './ui/report.js';
@@ -17,6 +19,20 @@ $('tolerance').value = specs.app.sizeToleranceIn;
 // When the KDP rules in the config were last checked against Amazon's pages, e.g. "on 5 November 2026".
 $('specs-checked').textContent = `on ${new Date(`${specs._meta.lastVerified}T12:00:00`)
   .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+// File picker: the native input covers the drop zone, so clicking, keyboard and drag-and-drop all
+// work without extra code. Here we only show which file was chosen.
+const fileStatus = $('file-status').innerHTML;
+$('file').addEventListener('change', () => {
+  const file = $('file').files[0];
+  $('drop').classList.toggle('has-file', Boolean(file));
+  $('file-status').innerHTML = file
+    ? `<span class="drop__main">${esc(file.name)}</span><span class="drop__sub">${(file.size / MB).toFixed(1)} MB. Tap to choose a different file.</span>`
+    : fileStatus;
+});
+for (const [type, on] of [['dragenter', true], ['dragleave', false], ['drop', false]]) {
+  $('drop').addEventListener(type, () => $('drop').classList.toggle('is-dragging', on));
+}
 
 $('settings').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -65,7 +81,11 @@ $('settings').addEventListener('submit', async (e) => {
 });
 
 function showMessage(text) {
-  $('result').innerHTML = `<p class="notice" role="alert">${esc(text)}</p>`;
+  $('result').innerHTML = `
+    <div class="card notice" role="alert">
+      <svg class="icon" aria-hidden="true"><use href="#i-fail"/></svg>
+      <p>${esc(text)}</p>
+    </div>`;
 }
 
 function showProgress(doneCount, total) {
@@ -78,9 +98,10 @@ function showProgress(doneCount, total) {
     return;
   }
   $('result').innerHTML = `
-    <div class="working" role="status">
+    <div class="card working" role="status">
       <label for="progress" id="progress-label">${label}</label>
       <progress id="progress" value="${doneCount}" max="${total || 1}"></progress>
       <p class="hint">Everything happens on your device. Long books take a little while.</p>
     </div>`;
+  $('result').scrollIntoView({ block: 'nearest' });
 }

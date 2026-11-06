@@ -18,7 +18,7 @@ Phase 1 of KDP Book Studio: a client-side KDP paperback **interior** preflight c
 - Page 1 is a right-hand (recto) page. Odd pages: binding edge on the LEFT. Even pages: binding edge on the RIGHT.
 - Bleed applies to top, bottom and outside edges only, never the gutter.
 - Issue shape:
-  `{ id, checkId, severity: "fail"|"warn"|"info", page|null, bbox?, measured, required, message, fix, accuracy, source, fixId? }`
+  `{ id, checkId, severity: "fail"|"warn"|"info", page|null, bbox?, measured, required, message, fix, accuracy, source, fixId?, groupKey?, sourceLabel? }`
 - Report message style example:
   "❌ Page 47 — Text inside gutter zone. Your book has 212 pages, so KDP requires a 0.5" inside margin; this text sits 0.31" from the binding edge. Fix: increase the inside margin to at least 0.5" in your document and re-export the PDF."
 

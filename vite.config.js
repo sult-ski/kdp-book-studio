@@ -22,7 +22,7 @@ export default {
         description: "Check a paperback interior PDF against Amazon KDP's printing rules. Your file never leaves your device.",
         start_url: '/',
         display: 'standalone',
-        background_color: '#e6eaee',
+        background_color: '#f3f2f7',
         theme_color: '#1d2633',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -31,9 +31,9 @@ export default {
         ],
       },
       workbox: {
-        // Everything needed to check a book offline: the app, the worker (pdf.js + pdf-lib, ~2.2 MB),
+        // Everything needed to check a book offline: the app, the worker (pdf.js + pdf-lib, ~2.2 MB), the Inter font,
         // pdf.js's standard fonts (unembedded text) and image decoders (JPEG 2000, JBIG2).
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}', 'pdfjs/standard_fonts/*', 'pdfjs/wasm/*'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}', 'pdfjs/standard_fonts/*', 'pdfjs/wasm/*'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         // Character maps (CJK and other CID fonts, ~1.5 MB in ~170 files) are rarely needed:
