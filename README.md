@@ -9,6 +9,16 @@ npm run dev     # open the local URL
 npm test        # engine tests (Node 18+)
 ```
 
+## Live site
+https://kdp-book-studio-psi.vercel.app. It works offline after the first visit (installable as an app), and a strict Content-Security-Policy stops the page from sending your PDF anywhere.
+
+## Deploy (Vercel CLI)
+```
+npx vercel deploy          # preview URL, check it in the browser first
+npx vercel deploy --prod   # production, only after the owner approves
+```
+`vercel.json` holds the build settings and security headers; `npm run preview` serves the same headers locally.
+
 ## Where things live
 - `src/config/kdp-specs.json` — every KDP rule, with source URL and last-verified date. Edit specs here only.
 - `src/engine/` — PDF reading and checks. No UI code; runs in Node tests and in the worker.
@@ -17,4 +27,4 @@ npm test        # engine tests (Node 18+)
 - `src/main.js` — form, worker and progress. `src/ui/report.js` — the report screen. `src/ui/styles.css` — styles.
 
 ## Status
-Milestones 2–7: page size (vs trim or trim + bleed, with tolerance), spread detection and page count checks; fonts embedded (including inside placed PDFs); file rules (encryption, 650 MB limit, comments, links, forms, bookmarks, JavaScript). Milestone 4: checks run in a Web Worker with a progress bar; each page is rendered with pdf.js at 100 DPI and text/art inside the top, bottom, outside or gutter margin is reported (mirrored per page, measured from the trim line with bleed). Milestone 5: image resolution from pdf.js operator lists (pixels ÷ printed inches, including images inside placed PDFs); below 300 DPI warns (KDP), below 200 DPI is labelled very low (our threshold). Milestone 6: bleed art at the page edges, runs of blank pages, text under 7 pt and transparency notes. Milestone 7: report screen with a verdict, each fix listed once, page-by-page proof thumbnails (safe area, zones to keep clear, numbered problem marks), a must-fix-only filter and a saveable JSON report. `npm run fixtures` writes test PDFs to `tests/fixtures/out/`.
+Milestones 2–8: page size (vs trim or trim + bleed, with tolerance), spread detection and page count checks; fonts embedded (including inside placed PDFs); file rules (encryption, 650 MB limit, comments, links, forms, bookmarks, JavaScript). Milestone 4: checks run in a Web Worker with a progress bar; each page is rendered with pdf.js at 100 DPI and text/art inside the top, bottom, outside or gutter margin is reported (mirrored per page, measured from the trim line with bleed). Milestone 5: image resolution from pdf.js operator lists (pixels ÷ printed inches, including images inside placed PDFs); below 300 DPI warns (KDP), below 200 DPI is labelled very low (our threshold). Milestone 6: bleed art at the page edges, runs of blank pages, text under 7 pt and transparency notes. Milestone 7: report screen with a verdict, each fix listed once, page-by-page proof thumbnails (safe area, zones to keep clear, numbered problem marks), a must-fix-only filter and a saveable JSON report. `npm run fixtures` writes test PDFs to `tests/fixtures/out/`.
