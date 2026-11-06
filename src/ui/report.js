@@ -181,9 +181,9 @@ function proofHtml(page, marked, thumb) {
       <circle cx="${r(cx)}" cy="${r(cy)}" r="${r(radius)}"/><text x="${r(cx)}" y="${r(cy)}" font-size="${r(0.5 * k)}">${n}</text></g>`;
   }).join('');
   return `
-    <figure class="proof" style="aspect-ratio: ${r(w)} / ${r(h)}">
+    <figure class="proof">
       ${thumb ? `<img src="${thumb}" alt="" loading="lazy" decoding="async">` : ''}
-      <svg viewBox="0 0 ${r(w)} ${r(h)}" aria-hidden="true">
+      <svg viewBox="0 0 ${r(w)} ${r(h)}" aria-hidden="true"><!-- in flow: its viewBox sets the page shape -->
         ${zones}${marks}
       </svg>
       <figcaption class="visually-hidden">Preview of page ${page.number} with problem areas circled.</figcaption>

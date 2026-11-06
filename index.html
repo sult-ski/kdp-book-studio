@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KDP Book Studio: check your paperback interior PDF</title>
   <meta name="description" content="Check a paperback interior PDF against Amazon KDP's printing rules before you upload. Page size, margins, fonts, images and more, with plain-English fixes. Your file never leaves your device." />
+  <meta name="theme-color" content="#1d2633" />
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="/src/ui/styles.css" />
 </head>
 <body>
@@ -47,6 +50,12 @@
 
     <section id="result" aria-label="Results"></section>
   </main>
+
+  <footer class="colophon">
+    <h2>Your book stays private</h2>
+    <p>Your PDF is checked inside your browser, on this device. It is never uploaded, stored or shared, and this site has no tracking or analytics. After your first visit it works offline too.</p>
+    <p>KDP rules come from Amazon's help pages, last checked <span id="specs-checked">recently</span>. This is an independent tool, not made by Amazon.</p>
+  </footer>
 
   <script type="module" src="/src/main.js"></script>
 </body>

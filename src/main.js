@@ -14,6 +14,9 @@ $('trim').innerHTML = listTrims(specs)
 $('inkPaper').innerHTML = listInkPaper(specs)
   .map((o) => `<option value="${o.key}">${o.label}</option>`).join('');
 $('tolerance').value = specs.app.sizeToleranceIn;
+// When the KDP rules in the config were last checked against Amazon's pages, e.g. "on 5 November 2026".
+$('specs-checked').textContent = `on ${new Date(`${specs._meta.lastVerified}T12:00:00`)
+  .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
 $('settings').addEventListener('submit', async (e) => {
   e.preventDefault();

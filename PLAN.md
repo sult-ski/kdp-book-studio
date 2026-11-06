@@ -1,6 +1,6 @@
 # Build plan — Phase 1 (interior preflight)
 
-Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-plugin-pwa, Netlify.
+Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-plugin-pwa, Vercel (owner changed from Netlify, Nov 2026).
 
 ## Milestones
 - [x] **M1 — Scaffold.** Upload, settings form filled from config, page count + page sizes grouped. 5 Node tests.
@@ -10,7 +10,7 @@ Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-p
 - [x] **M5 — Image DPI.** pdf.js operator list: track CTM, on paintImageXObject compute displayed size; DPI = pixels ÷ inches. <300 warn (KDP), <200 warn as "very low" (OUR rule; owner re-tiered Nov 2026: KDP doesn't block low DPI). Inline images/masks/patterns = best-effort.
 - [x] **M6 — Bleed & blank pages.** No bleed + art within 0.02" of edge → warn. Bleed on + edge art stopping short of the bleed edge → info (best-effort). Blank pages: >4 consecutive at start/middle or >10 at end → warn (owner: manual review may flag). Text under 7 pt → warn (best-effort). Transparency → advisory info only.
 - [x] **M7 — Report UI.** Verdict + counts, "Whole book" then per-page cards, thumbnail with unsafe zone shaded and issue bbox outlined, Fails-only filter, "Why" link to source, download JSON report. Mobile-first.
-- [ ] **M8 — Ship.** PWA (vite-plugin-pwa), privacy note, Netlify deploy, test on one real KDP-approved book.
+- [ ] **M8 — Ship.** PWA (vite-plugin-pwa), privacy note, Vercel deploy (Vercel CLI, project kdp-book-studio; ask before the first production deploy), test on one real KDP-approved book.
 
 ## Test fixtures (generated with pdf-lib)
 good-6x9-120p (passes all) · wrong-size · tiny-margins (text at 0.15") · gutter-212p (text 0.31" from binding → needs 0.5") · low-dpi (150 DPI) · unembedded-font · bleed-art-short · 6-consecutive-blanks · annotated · encrypted

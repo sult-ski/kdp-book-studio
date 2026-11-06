@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A proof page on the press-ink board, with a red-pencil circle: the report's mark, as an icon. -->
+  <rect width="512" height="512" rx="96" fill="#1d2633"/>
+  <rect x="136" y="88" width="240" height="336" rx="10" fill="#ffffff"/>
+  <rect x="166" y="118" width="180" height="276" fill="none" stroke="#1f6fa8" stroke-width="6" stroke-dasharray="16 11"/>
+  <g fill="#9aa4ae">
+    <rect x="182" y="146" width="148" height="12" rx="6"/>
+    <rect x="182" y="176" width="126" height="12" rx="6"/>
+    <rect x="182" y="206" width="148" height="12" rx="6"/>
+    <rect x="182" y="236" width="104" height="12" rx="6"/>
+    <rect x="182" y="296" width="148" height="12" rx="6"/>
+    <rect x="182" y="326" width="132" height="12" rx="6"/>
+  </g>
+  <ellipse cx="300" cy="242" rx="74" ry="46" fill="none" stroke="#c4122f" stroke-width="18" transform="rotate(-8 300 242)"/>
+</svg>
