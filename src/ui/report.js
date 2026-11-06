@@ -32,61 +32,60 @@ export function renderReport(root, data) {
 
   root.innerHTML = `
     <div class="report">
-      <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>
-        <pattern id="hatch" width="0.12" height="0.12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="0.12" height="0.12"/><line x1="0" y1="0" x2="0" y2="0.12"/></pattern></defs></svg>
       ${verdictHtml(counts)}
       ${['fail', 'warn', 'info'].map((sev) => groupHtml(sev, groups.filter((g) => g.severity === sev), ctx)).join('')}
       ${detailsHtml(data)}
     </div>`;
 
   const report = root.querySelector('.report');
-  report.querySelector('#save-report').addEventListener('click', () => saveReport(data, counts));
+  report.querySelector('[data-action="save-report"]').addEventListener('click', () => saveReport(data, counts));
   // Count chips jump to their group; "Good to know" starts collapsed, so open it on the way.
   report.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href="#group-info"]');
-    if (link) report.querySelector('#group-info').open = true;
+    if (e.target.closest('a[data-group="info"]')) report.querySelector('details.group[data-sev="info"]').open = true;
   });
   // Bring the answer into view: smooth unless the reader prefers reduced motion. Focus moves too,
   // so screen readers announce the verdict.
   // Focus first: a focus() call after a smooth scroll has started can cancel it.
-  report.querySelector('#verdict-title').focus({ preventScroll: true });
+  report.querySelector('.verdict__title').focus({ preventScroll: true });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   report.querySelector('.verdict').scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
 }
 
-function verdictHtml(counts) {
+/** @param {'interior'|'cover'} subject what "Nothing here should stop KDP accepting your …" refers to */
+/** `p` prefixes element ids, so two reports (interior and cover tabs) can be in the page at once. */
+export function verdictHtml(counts, subject = 'interior', p = '') {
   const n = counts.fail;
   const title = n ? `Fix ${n} ${n === 1 ? 'thing' : 'things'} before uploading` : 'Ready for KDP';
   const lead = n
     ? 'KDP will reject this file as it is. Open each problem below to see the pages and how to fix it.'
     : counts.warn
-      ? `Nothing here should stop KDP accepting your interior. ${counts.warn === 1 ? 'One thing is' : `${counts.warn} things are`} worth checking before you upload.`
-      : 'Nothing here should stop KDP accepting your interior.';
+      ? `Nothing here should stop KDP accepting your ${subject}. ${counts.warn === 1 ? 'One thing is' : `${counts.warn} things are`} worth checking before you upload.`
+      : `Nothing here should stop KDP accepting your ${subject}.`;
   const chips = ['fail', 'warn', 'info'].map((sev) => {
     const inner = `<strong>${counts[sev]}</strong> ${SEVERITY[sev].toLowerCase()}`;
     return `<li class="count" data-sev="${sev}" data-zero="${counts[sev] === 0}">${
-      counts[sev] ? `<a href="#group-${sev}">${inner}</a>` : `<span>${inner}</span>`}</li>`;
+      counts[sev] ? `<a href="#${p}group-${sev}" data-group="${sev}">${inner}</a>` : `<span>${inner}</span>`}</li>`;
   }).join('');
   return `
-    <section class="card verdict" data-state="${n ? 'fail' : 'pass'}" aria-labelledby="verdict-title">
+    <section class="card verdict" data-state="${n ? 'fail' : 'pass'}" aria-labelledby="${p}verdict-title">
       <div class="verdict__head">
         ${icon(n ? 'fail' : 'pass', 'verdict__icon')}
         <div>
-          <h2 id="verdict-title" tabindex="-1">${title}</h2>
+          <h2 id="${p}verdict-title" class="verdict__title" tabindex="-1">${title}</h2>
           <p class="verdict__lead">${lead}</p>
         </div>
       </div>
       <ul class="counts" aria-label="Problems by type">${chips}</ul>
       <div class="verdict__actions">
-        <button type="button" class="btn btn--secondary" id="save-report">Save this report</button>
+        <button type="button" class="btn btn--secondary" data-action="save-report">Save this report</button>
         <span class="hint">A .json file to keep or send to your designer or formatter.</span>
       </div>
     </section>`;
 }
 
-function groupHtml(sev, groups, ctx) {
+export function groupHtml(sev, groups, ctx) {
   if (!groups.length) return '';
+  const p = ctx.prefix ?? '';
   const head = `${icon(sev, 'group__icon')}<span class="group__name">${SEVERITY[sev]}</span><span class="group__count">${groups.length}</span>`;
   const body = `
     <p class="group__hint">${GROUP_HINT[sev]}</p>
@@ -94,14 +93,14 @@ function groupHtml(sev, groups, ctx) {
   // "Good to know" is collapsed by default: these usually need no action.
   if (sev === 'info') {
     return `
-      <details class="group group--fold" id="group-${sev}" data-sev="${sev}">
+      <details class="group group--fold" id="${p}group-${sev}" data-sev="${sev}">
         <summary><h2 class="group__title">${head}${icon('chevron', 'chevron')}</h2></summary>
         ${body}
       </details>`;
   }
   return `
-    <section class="group" id="group-${sev}" data-sev="${sev}" aria-labelledby="group-${sev}-title">
-      <h2 class="group__title" id="group-${sev}-title">${head}</h2>
+    <section class="group" id="${p}group-${sev}" data-sev="${sev}" aria-labelledby="${p}group-${sev}-title">
+      <h2 class="group__title" id="${p}group-${sev}-title">${head}</h2>
       ${body}
     </section>`;
 }
@@ -109,10 +108,10 @@ function groupHtml(sev, groups, ctx) {
 /** Page ranges with an en dash for display: "1–63, 70". */
 const pageRange = (pages) => formatPageList(pages).replace(/-/g, '–');
 
-function rowHtml(g, { issues, pageInfo, thumbs, specs }) {
+function rowHtml(g, { issues, pageInfo, thumbs, specs, onePageLabel }) {
   const list = pageRange(g.pages);
   const where = g.pages.length === 0 ? 'Whole book'
-    : g.pages.length === 1 ? `Page ${g.pages[0]}`
+    : g.pages.length === 1 ? (onePageLabel ?? `Page ${g.pages[0]}`)
     : list.length <= 14 ? `Pages ${list}`
     : `${g.pages.length} pages`;
   const members = issues.filter((i) => issueGroupKey(i) === g.key);
@@ -155,7 +154,7 @@ function proofsHtml(g, members, pageInfo, thumbs) {
       ${figures}
       ${more ? `<p class="proofs__more">and ${more} more ${more === 1 ? 'page' : 'pages'}</p>` : ''}
     </div>
-    <p class="proofs__legend"><span class="key key--safe"></span> Safe area for text <span class="key key--zone"></span> Too close to the edge or binding</p>`;
+    ${shown.some((p) => pageInfo.get(p).layout) ? `<p class="proofs__legend"><span class="key key--safe"></span> Safe area for text <span class="key key--zone"></span> Too close to the edge or binding</p>` : ''}`;
 }
 
 /** Thumbnail with the safe area, the zones to keep clear, and an outline around each located problem. */
@@ -182,15 +181,16 @@ function proofHtml(page, pageIssues, thumb) {
     return `<rect class="mark" data-sev="${i.severity}" x="${r(x)}" y="${r(y)}" width="${r(Math.min(w - x, b.width + 2 * pad))}" height="${r(Math.min(h - y, b.height + 2 * pad))}" rx="${r(0.1 * k)}" stroke-width="${r(0.09 * k)}"/>`;
   }).join('');
   const side = page.side === 'right' ? 'right-hand' : 'left-hand';
+  const caption = page.caption ?? `Page ${page.number} <span>${side}</span>`;
   return `
-    <figure class="proof">
+    <figure class="proof${w > h ? ' proof--wide' : ''}">
       <div class="proof__page">
         ${thumb ? `<img src="${thumb}" alt="" loading="lazy" decoding="async">` : ''}
         <svg viewBox="0 0 ${r(w)} ${r(h)}" aria-hidden="true"><!-- in flow: its viewBox sets the page shape -->
           ${zones}${marks}
         </svg>
       </div>
-      <figcaption>Page ${page.number} <span>${side}</span></figcaption>
+      <figcaption>${caption}</figcaption>
     </figure>`;
 }
 
@@ -227,6 +227,13 @@ function rowTitle(g, count, specs) {
       return parts[2] === 'inside' ? 'Art runs into the binding' : 'Art touches edge without bleed';
     case 'blankPages': return g.measured.replace(/^./, (c) => c.toUpperCase());
     case 'transparency': return 'Transparency used';
+    case 'coverSize':
+      return { 'cover-size-near': 'Cover size within tolerance', 'cover-size-no-bleed': 'Cover has no bleed',
+        'cover-size-front-only': 'Front cover only, no back or spine', 'cover-size-spine': "Spine width doesn't match your book",
+      }[g.id] ?? 'Wrong cover size';
+    case 'coverSpineText':
+      return g.severity === 'fail' ? `Spine text under ${specs.cover.spineText.minPages} pages` : `Spine text at ${specs.cover.spineText.minPages} pages`;
+    case 'coverPages': return `Cover PDF has ${g.measured}`;
     case 'fileRules':
       if (g.id.startsWith('file-comments')) return 'Comments or markup on the page';
       if (g.id.startsWith('file-links')) return 'Clickable links';

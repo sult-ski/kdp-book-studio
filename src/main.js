@@ -6,6 +6,8 @@ import { listTrims, listInkPaper, latestVerified } from './engine/specs.js';
 import { renderReport, esc } from './ui/report.js';
 import { initTabs } from './ui/tabs.js';
 import { initCalculator } from './ui/calculator.js';
+import { initFilePicker } from './ui/filePicker.js';
+import { initCoverCheck } from './ui/coverCheck.js';
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked
@@ -14,6 +16,7 @@ let thumbs = new Map(); // page number -> object URL of its thumbnail
 
 initTabs();
 initCalculator(specs);
+initCoverCheck(specs);
 
 // Fill dropdowns from the config, never from hard-coded lists.
 $('trim').innerHTML = listTrims(specs)
@@ -26,19 +29,7 @@ $('tolerance').value = specs.app.sizeToleranceIn;
 $('specs-checked').textContent = `on ${new Date(`${latestVerified(specs)}T12:00:00`)
   .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
-// File picker: the native input covers the drop zone, so clicking, keyboard and drag-and-drop all
-// work without extra code. Here we only show which file was chosen.
-const fileStatus = $('file-status').innerHTML;
-$('file').addEventListener('change', () => {
-  const file = $('file').files[0];
-  $('drop').classList.toggle('has-file', Boolean(file));
-  $('file-status').innerHTML = file
-    ? `<span class="drop__main">${esc(file.name)}</span><span class="drop__sub">${(file.size / MB).toFixed(1)} MB. Tap to choose a different file.</span>`
-    : fileStatus;
-});
-for (const [type, on] of [['dragenter', true], ['dragleave', false], ['drop', false]]) {
-  $('drop').addEventListener(type, () => $('drop').classList.toggle('is-dragging', on));
-}
+initFilePicker({ input: $('file'), zone: $('drop'), status: $('file-status') });
 
 $('settings').addEventListener('submit', async (e) => {
   e.preventDefault();

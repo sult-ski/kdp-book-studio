@@ -20,12 +20,17 @@
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.5v.01"/></symbol>
     <symbol id="i-pass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.7 2.7L16.2 9.5"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <defs><!-- shaded "keep clear" zones on page previews, sized in page inches -->
+      <pattern id="hatch" width="0.12" height="0.12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="0.12" height="0.12"/><line x1="0" y1="0" x2="0" y2="0.12"/></pattern>
+    </defs>
   </svg>
 
   <header class="topbar">
     <a class="brand" href="/"><img src="/icons/icon.svg" alt="" width="28" height="28" /> KDP Book Studio</a>
     <div class="tabs" role="tablist" aria-label="Tools">
       <button type="button" class="tab" role="tab" id="tab-interior" aria-controls="panel-interior" aria-selected="true" data-hash="interior">Interior check</button>
+      <button type="button" class="tab" role="tab" id="tab-cover" aria-controls="panel-cover" aria-selected="false" tabindex="-1" data-hash="cover">Cover check</button>
       <button type="button" class="tab" role="tab" id="tab-calculator" aria-controls="panel-calculator" aria-selected="false" tabindex="-1" data-hash="calculator">Cover calculator</button>
     </div>
   </header>
@@ -95,6 +100,57 @@
     </form>
 
     <section id="result" class="result" aria-label="Results"></section>
+  </div>
+
+  <div class="layout" id="panel-cover" role="tabpanel" aria-labelledby="tab-cover" hidden>
+    <section class="hero" aria-labelledby="cover-title">
+      <h1 id="cover-title">Check your cover before you upload it</h1>
+      <p class="lead">Choose your cover PDF and tell us about your book. You'll see whether the cover is the size KDP expects for your spine, and how to fix it if not.</p>
+      <ol class="steps" aria-label="How it works">
+        <li><span class="steps__n" aria-hidden="true">1</span><span><strong>Upload</strong> your cover PDF</span></li>
+        <li><span class="steps__n" aria-hidden="true">2</span><span><strong>Enter</strong> trim size, paper and page count</span></li>
+        <li><span class="steps__n" aria-hidden="true">3</span><span><strong>Get a fix list</strong> for your cover</span></li>
+      </ol>
+    </section>
+
+    <form id="cover-form" class="card setup" aria-labelledby="cover-form-title">
+      <h2 id="cover-form-title" class="card__title">Check your cover</h2>
+      <div class="field">
+        <label class="field__label" for="cover-file">Cover PDF</label>
+        <div class="drop" id="cover-drop">
+          <input type="file" id="cover-file" accept="application/pdf" required aria-describedby="cover-file-status" />
+          <svg class="drop__icon" aria-hidden="true"><use href="#i-file"/></svg>
+          <span class="drop__text" id="cover-file-status">
+            <span class="drop__main"><span class="drop__cta">Choose a PDF</span> or drop it here</span>
+            <span class="drop__sub">Back cover, spine and front cover as one page</span>
+          </span>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label" for="cover-trim">Trim size</label>
+        <select id="cover-trim"></select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="cover-ink">Ink and paper</label>
+        <select id="cover-ink"></select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="cover-pages">Page count</label>
+        <input type="number" id="cover-pages" min="1" max="2000" step="1" inputmode="numeric" required aria-describedby="cover-pages-hint" />
+        <p class="hint" id="cover-pages-hint">The number of pages in your interior PDF. It sets the spine width.</p>
+      </div>
+      <details class="advanced">
+        <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg> Advanced</summary>
+        <div class="field">
+          <label class="field__label" for="cover-tolerance">Cover size tolerance (inches)</label>
+          <input type="number" id="cover-tolerance" min="0" max="0.1" step="0.001" inputmode="decimal" aria-describedby="cover-tolerance-hint" />
+          <p class="hint" id="cover-tolerance-hint">How far the cover may be from the exact size before it's flagged. This is our setting, not a KDP rule.</p>
+        </div>
+      </details>
+      <button type="submit" class="btn btn--primary">Check my cover</button>
+    </form>
+
+    <section id="cover-result" class="result" aria-label="Cover results"></section>
   </div>
 
   <div class="layout" id="panel-calculator" role="tabpanel" aria-labelledby="tab-calculator" hidden>
