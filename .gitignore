@@ -4,3 +4,6 @@ dist/
 tests/fixtures/out/
 public/pdfjs/
 .vercel/
+
+.vercel
+.env*

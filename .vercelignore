@@ -1,0 +1,8 @@
+# Never upload local secrets, test PDFs or generated files. Vercel rebuilds dist/ and public/pdfjs/.
+.env*
+.vercel
+node_modules
+dist
+public/pdfjs
+.playwright-mcp
+tests/fixtures/out
