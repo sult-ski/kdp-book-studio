@@ -7,3 +7,4 @@ public/pdfjs/
 
 .vercel
 .env*
+.superpowers

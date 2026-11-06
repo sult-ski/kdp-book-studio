@@ -43,3 +43,18 @@ export function outsideMarginFor(specs, bleed) {
 export function sourceUrl(specs, section) {
   return specs._meta.sources[section.source];
 }
+
+/** Spine width in inches: page count x per-page thickness for the ink and paper. */
+export function spineWidth(specs, inkPaperKey, pages) {
+  const perPage = specs.cover.spine.perPageIn[inkPaperKey];
+  if (perPage == null) throw new Error(`No spine thickness for ink and paper "${inkPaperKey}"`);
+  return pages * perPage;
+}
+
+/** Full cover size in inches (back + spine + front, plus bleed on all four outside edges). */
+export function coverSize(specs, trimKey, inkPaperKey, pages) {
+  const [w, h] = trimKey.split('x').map(Number);
+  const bleed = specs.cover.size.bleedIn;
+  const spineIn = spineWidth(specs, inkPaperKey, pages);
+  return { widthIn: bleed + w + spineIn + w + bleed, heightIn: bleed + h + bleed, spineIn, trimWidthIn: w, trimHeightIn: h, bleedIn: bleed };
+}

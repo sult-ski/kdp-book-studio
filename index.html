@@ -24,9 +24,14 @@
 
   <header class="topbar">
     <a class="brand" href="/"><img src="/icons/icon.svg" alt="" width="28" height="28" /> KDP Book Studio</a>
+    <div class="tabs" role="tablist" aria-label="Tools">
+      <button type="button" class="tab" role="tab" id="tab-interior" aria-controls="panel-interior" aria-selected="true" data-hash="interior">Interior check</button>
+      <button type="button" class="tab" role="tab" id="tab-calculator" aria-controls="panel-calculator" aria-selected="false" tabindex="-1" data-hash="calculator">Cover calculator</button>
+    </div>
   </header>
 
-  <main class="layout">
+  <main>
+  <div class="layout" id="panel-interior" role="tabpanel" aria-labelledby="tab-interior">
     <section class="hero" aria-labelledby="hero-title">
       <h1 id="hero-title">Know your paperback will pass KDP before you upload it</h1>
       <p class="lead">Check your book's interior PDF against Amazon KDP's printing rules: page size, margins, fonts, images and more. You get a plain-English list of what to fix, page by page.</p>
@@ -90,6 +95,39 @@
     </form>
 
     <section id="result" class="result" aria-label="Results"></section>
+  </div>
+
+  <div class="layout" id="panel-calculator" role="tabpanel" aria-labelledby="tab-calculator" hidden>
+    <section class="hero" aria-labelledby="calc-title">
+      <h1 id="calc-title">Get the exact size of your paperback cover</h1>
+      <p class="lead">Enter your trim size, paper and page count. You get the spine width and full cover size KDP expects, and a PDF template with every guide in place for your design app.</p>
+      <ul class="formula" aria-label="How KDP works it out">
+        <li><strong>Spine</strong> = page count &times; paper thickness</li>
+        <li><strong>Width</strong> = bleed + back + spine + front + bleed</li>
+        <li><strong>Height</strong> = bleed + trim height + bleed</li>
+      </ul>
+    </section>
+
+    <form id="calc" class="card setup" aria-labelledby="calc-form-title">
+      <h2 id="calc-form-title" class="card__title">Your book</h2>
+      <div class="field">
+        <label class="field__label" for="calc-trim">Trim size</label>
+        <select id="calc-trim"></select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="calc-ink">Ink and paper</label>
+        <select id="calc-ink"></select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="calc-pages">Page count</label>
+        <input type="number" id="calc-pages" min="1" max="2000" step="1" inputmode="numeric" value="200" aria-describedby="calc-pages-hint" />
+        <p class="hint" id="calc-pages-hint">The number of pages in your interior PDF.</p>
+      </div>
+    </form>
+
+    <section id="calc-result" class="result" aria-label="Cover size"></section>
+    <p id="calc-status" class="visually-hidden" aria-live="polite"></p>
+  </div>
   </main>
 
   <footer class="footer">

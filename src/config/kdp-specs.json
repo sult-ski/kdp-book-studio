@@ -1,13 +1,15 @@
 {
   "_meta": {
-    "description": "KDP paperback interior specs. The ONLY place specs live. All lengths in inches.",
+    "description": "KDP paperback interior and cover specs. The ONLY place specs live. All lengths in inches.",
     "lastVerified": "2026-11-05",
     "sources": {
       "submission": "https://kdp.amazon.com/en_US/help/topic/G201857950",
       "trimBleedMargins": "https://kdp.amazon.com/en_US/help/topic/GVBQ3CMEQW3W2VL6",
       "saveManuscript": "https://kdp.amazon.com/en_US/help/topic/G202145060",
       "fixFormatting": "https://kdp.amazon.com/en_US/help/topic/G201834260",
-      "cover": "https://kdp.amazon.com/en_US/help/topic/G201953020"
+      "cover": "https://kdp.amazon.com/en_US/help/topic/G201953020",
+      "barcode": "https://kdp.amazon.com/en_US/help/topic/G5HDYGP4BXLX4RUW",
+      "fontSize": "https://kdp.amazon.com/en_US/help/topic/G201113520"
     }
   },
   "bleed": {
@@ -122,5 +124,66 @@
     "maxConsecutiveEnd": 10,
     "source": "saveManuscript",
     "lastVerified": "2026-11-05"
+  },
+  "cover": {
+    "_note": "Paperback cover rules (Phase 2). Owner-verified against KDP's help pages on 2026-11-06. One PDF: back cover, spine and front cover side by side, with bleed on all four outside edges.",
+    "size": {
+      "bleedIn": 0.125,
+      "_formula": "width = bleed + trim width + spine + trim width + bleed; height = bleed + trim height + bleed",
+      "source": "cover",
+      "lastVerified": "2026-11-06"
+    },
+    "spine": {
+      "perPageIn": {
+        "bw_white": 0.002252,
+        "bw_cream": 0.0025,
+        "bw_groundwood": 0.00235,
+        "color_standard": 0.002252,
+        "color_premium": 0.002347
+      },
+      "_note": "Spine width = page count x per-page thickness for the ink and paper. Also listed on the submission guidelines page.",
+      "source": "cover",
+      "alsoSource": "submission",
+      "lastVerified": "2026-11-06"
+    },
+    "safeArea": {
+      "textMarginIn": 0.25,
+      "_note": "Text and important images at least this far inside the trim on the outside edges.",
+      "source": "submission",
+      "lastVerified": "2026-11-06"
+    },
+    "spineText": {
+      "minPages": 79,
+      "coverCreatorMinPages": 80,
+      "_note": "KDP allows spine text from 79 pages; its Cover Creator tool only adds spine text from 80 pages.",
+      "clearanceIn": 0.0625,
+      "source": "cover",
+      "lastVerified": "2026-11-06"
+    },
+    "fold": {
+      "varianceIn": 0.0625,
+      "_note": "The fold between spine and covers can shift by this much either way when the book is bound.",
+      "source": "cover",
+      "lastVerified": "2026-11-06"
+    },
+    "barcode": {
+      "suggestedIn": { "width": 2, "height": 1.2 },
+      "minIn": { "width": 1.4, "height": 0.8 },
+      "clearanceIn": 0.25,
+      "background": "white",
+      "_note": "KDP prints the barcode on the back cover, bottom right: keep this box empty with a white background, at least clearanceIn from the spine and the trim.",
+      "source": "barcode",
+      "lastVerified": "2026-11-06"
+    },
+    "fonts": {
+      "minSizePt": 7,
+      "source": "fontSize",
+      "lastVerified": "2026-11-06"
+    },
+    "images": {
+      "minDpi": 300,
+      "source": "cover",
+      "lastVerified": "2026-11-06"
+    }
   }
 }

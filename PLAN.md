@@ -13,6 +13,14 @@ Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-p
 - [x] **M8 — Ship.** PWA (vite-plugin-pwa), privacy note, Vercel deploy (Vercel CLI, project kdp-book-studio; ask before the first production deploy), test on one real KDP-approved book (owner confirmed "Ready for KDP" on the live site, Nov 2026).
 - [x] **M9 — UI redesign.** Premium, simple SaaS look; no engine changes. Self-hosted Inter (@fontsource), neutral palette + one accent, subtle static iridescent background. Hero with value statement, 3 steps, trust badges. Form in one card with custom selects, file picker and bleed toggle (44px targets). Results summary-first: verdict card, one expandable row per issue grouped Must fix / Worth checking / Good to know (collapsed), collapsed "Check details". Short footer. Verify at desktop and 360px.
 
+## Phase 2: Cover checker + calculator (owner-verified specs, Nov 2026)
+Tabs alongside the interior checker, same design system, 100% client-side. Specs in `kdp-specs.json` → `cover`.
+- [x] **C1 — Tabs + Calculator.** Spine width, full cover size, to-scale diagram, downloadable PDF template with guides (trim, bleed, safe area, spine, barcode box).
+- [ ] **C2 — Cover size + spine check.** Cover tab: upload cover PDF, compare its size to the calculated size (tolerance), spine text only from 79 pages.
+- [ ] **C3 — Safe area, spine text and fold lines.** Reuse render-and-scan: text outside safe area (fail), text within 0.0625" of fold lines (warn), spine text too close to spine edge (warn).
+- [ ] **C4 — Fonts, DPI, barcode.** Reuse the interior engine for fonts and image DPI; text under 7 pt; barcode area check (best-effort info).
+- [ ] **C5 — Cover report UI.** Zone overlay thumbnail; real-cover test with the owner's own book cover.
+
 ## Test fixtures (generated with pdf-lib)
 good-6x9-120p (passes all) · wrong-size · tiny-margins (text at 0.15") · gutter-212p (text 0.31" from binding → needs 0.5") · low-dpi (150 DPI) · unembedded-font · bleed-art-short · 6-consecutive-blanks · annotated · encrypted
 

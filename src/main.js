@@ -4,11 +4,16 @@ import './ui/styles.css';
 import specs from './config/kdp-specs.json';
 import { listTrims, listInkPaper } from './engine/specs.js';
 import { renderReport, esc } from './ui/report.js';
+import { initTabs } from './ui/tabs.js';
+import { initCalculator } from './ui/calculator.js';
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked
 let worker; // the preflight Web Worker for the current check
 let thumbs = new Map(); // page number -> object URL of its thumbnail
+
+initTabs();
+initCalculator(specs);
 
 // Fill dropdowns from the config, never from hard-coded lists.
 $('trim').innerHTML = listTrims(specs)
