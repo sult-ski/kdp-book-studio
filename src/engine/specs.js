@@ -58,3 +58,17 @@ export function coverSize(specs, trimKey, inkPaperKey, pages) {
   const spineIn = spineWidth(specs, inkPaperKey, pages);
   return { widthIn: bleed + w + spineIn + w + bleed, heightIn: bleed + h + bleed, spineIn, trimWidthIn: w, trimHeightIn: h, bleedIn: bleed };
 }
+
+/** The most recent lastVerified date (YYYY-MM-DD) anywhere in the config, for "rules last checked". */
+export function latestVerified(specs) {
+  let latest = '';
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'lastVerified' && typeof value === 'string' && value > latest) latest = value;
+      else walk(value);
+    }
+  };
+  walk(specs);
+  return latest;
+}

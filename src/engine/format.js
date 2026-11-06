@@ -20,3 +20,9 @@ export function sizeMm(w, h) {
 export function sizeBoth(w, h) {
   return `${size(w, h)} (${sizeMm(w, h)})`;
 }
+
+/** Always 3 decimals, rounded half up: 0.141876 -> '0.142"', 11.4075 -> '11.408"'.
+ * The epsilon stops float noise (11.4075 is stored as 11.40749…) from rounding down. Matches KDP's calculator. */
+export function inches3(n) {
+  return `${(Math.round(n * 1000 + 1e-6) / 1000).toFixed(3)}"`;
+}

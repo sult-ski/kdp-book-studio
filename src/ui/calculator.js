@@ -2,11 +2,11 @@
 // Updates as you type. All numbers come from the engine (specs.js / cover/layout.js), never from here.
 import { listTrims, listInkPaper, sourceUrl } from '../engine/specs.js';
 import { coverLayout } from '../engine/cover/layout.js';
+import { inches3 } from '../engine/format.js';
 import { esc } from './report.js';
 
 const $ = (id) => document.getElementById(id);
-// Round half up at 3 decimals; the epsilon stops float noise (11.4075 is stored as 11.40749…) rounding down.
-const inch = (n) => `${(Math.round(n * 1000 + 1e-6) / 1000).toFixed(3)}"`;
+const inch = inches3;
 const mm = (n) => `${(n * 25.4).toFixed(1)} mm`;
 
 export function initCalculator(specs) {
@@ -48,7 +48,7 @@ function update(specs) {
     notes.push(['fail', `KDP prints ${trimLabel} books in ${ink} with ${L.pageRange[0]} to ${L.pageRange[1]} pages. Your interior needs to be in that range.`]);
   }
   if (settings.pages % 2 === 1) {
-    notes.push(['info', `KDP prints pages in pairs, so a ${settings.pages}-page interior is printed as ${settings.pages + 1} pages. If your cover is for the printed book, use ${settings.pages + 1}.`]);
+    notes.push(['info', `An odd page count is fine: KDP adds a blank page at the end of the interior when printing. The spine is still worked out from ${settings.pages} pages, as KDP's own cover calculator does.`]);
   }
   if (L.spineText.note) notes.push(['info', L.spineText.note]);
 

@@ -2,7 +2,7 @@
 import '@fontsource-variable/inter/opsz.css';
 import './ui/styles.css';
 import specs from './config/kdp-specs.json';
-import { listTrims, listInkPaper } from './engine/specs.js';
+import { listTrims, listInkPaper, latestVerified } from './engine/specs.js';
 import { renderReport, esc } from './ui/report.js';
 import { initTabs } from './ui/tabs.js';
 import { initCalculator } from './ui/calculator.js';
@@ -21,8 +21,9 @@ $('trim').innerHTML = listTrims(specs)
 $('inkPaper').innerHTML = listInkPaper(specs)
   .map((o) => `<option value="${o.key}">${o.label}</option>`).join('');
 $('tolerance').value = specs.app.sizeToleranceIn;
-// When the KDP rules in the config were last checked against Amazon's pages, e.g. "on 5 November 2026".
-$('specs-checked').textContent = `on ${new Date(`${specs._meta.lastVerified}T12:00:00`)
+// When the KDP rules in the config were last checked against Amazon's pages (the latest date of any rule),
+// e.g. "on 6 November 2026".
+$('specs-checked').textContent = `on ${new Date(`${latestVerified(specs)}T12:00:00`)
   .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
 // File picker: the native input covers the drop zone, so clicking, keyboard and drag-and-drop all

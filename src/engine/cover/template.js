@@ -3,6 +3,7 @@
 // pdf-lib only; no DOM, so it runs in the browser and in Node tests.
 import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib';
 import { coverLayout } from './layout.js';
+import { inches3 } from '../format.js';
 
 const PT = 72;
 const COLOR = {
@@ -14,7 +15,6 @@ const COLOR = {
   text: rgb(0.11, 0.13, 0.19),
   muted: rgb(0.33, 0.37, 0.44),
 };
-const r3 = (n) => (Math.round(n * 1000 + 1e-6) / 1000).toString(); // epsilon: 11.4075 must show as 11.408
 
 /**
  * @param {object} specs
@@ -70,7 +70,7 @@ export async function makeCoverTemplate(specs, settings) {
   box(barcode, { color: rgb(1, 1, 1), borderColor: COLOR.barcode, borderWidth: 1, borderDashArray: [3, 2] });
   const bcx = barcode.x + barcode.width / 2;
   text('Barcode area', bcx, barcode.y + barcode.height / 2 - 0.12, { size: 8, f: bold, color: COLOR.barcode, center: true });
-  text(`${r3(barcode.width)}" x ${r3(barcode.height)}", keep empty`, bcx, barcode.y + barcode.height / 2 + 0.06, { size: 7, color: COLOR.barcode, center: true });
+  text(`${inches3(barcode.width)} x ${inches3(barcode.height)}, keep empty`, bcx, barcode.y + barcode.height / 2 + 0.06, { size: 7, color: COLOR.barcode, center: true });
   text('KDP prints the barcode here', bcx, barcode.y + barcode.height / 2 + 0.22, { size: 7, color: COLOR.barcode, center: true });
 
   // Panel names.
@@ -83,7 +83,7 @@ export async function makeCoverTemplate(specs, settings) {
   const ink = specs.pageCount.inkPaperTypes[settings.inkPaper] ?? settings.inkPaper;
   const notes = [
     [`${settings.trim.replace('x', '" x ')}" trim, ${settings.pages} pages, ${ink.toLowerCase()}`, bold],
-    [`Full cover ${r3(W)}" x ${r3(H)}" (with ${b}" bleed). Spine ${r3(L.spineIn)}".`, font],
+    [`Full cover ${inches3(W)} x ${inches3(H)} (with ${b}" bleed). Spine ${inches3(L.spineIn)}.`, font],
     ['Pink edge: bleed, cut off. Black line: trim. Grey bands: where the spine may fold.', font],
     [`Safe area (dashed blue): keep text ${specs.cover.safeArea.textMarginIn}" inside the trim.`, font],
     [L.spineText.allowed

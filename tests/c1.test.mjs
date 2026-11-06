@@ -2,9 +2,10 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { PDFDocument } from 'pdf-lib';
-import { spineWidth, coverSize } from '../src/engine/specs.js';
+import { spineWidth, coverSize, latestVerified } from '../src/engine/specs.js';
 import { coverLayout } from '../src/engine/cover/layout.js';
 import { makeCoverTemplate } from '../src/engine/cover/template.js';
+import { inches3 } from '../src/engine/format.js';
 
 const specs = JSON.parse(readFileSync(new URL('../src/config/kdp-specs.json', import.meta.url)));
 let passed = 0;
@@ -97,6 +98,20 @@ await test('template PDF: one page at the full cover size, with the guide notes'
   const pdf = await pdfjs.getDocument({ data: new Uint8Array(bytes), verbosity: 0 }).promise;
   const text = (await (await pdf.getPage(1)).getTextContent()).items.map((i) => i.str).join(' ');
   for (const word of ['BACK COVER', 'FRONT COVER', 'SPINE', 'Barcode', 'Safe area', 'Delete']) assert.match(text, new RegExp(word));
+});
+
+await test("matches KDP's own cover calculator: 5.5x8.5, white, 63 pages (count as entered)", () => {
+  const L = coverLayout(specs, { trim: '5.5x8.5', inkPaper: 'bw_white', pages: 63 });
+  assert.equal(inches3(L.spineIn), '0.142"');
+  assert.equal(inches3(L.widthIn), '11.392"');
+  assert.equal(inches3(L.heightIn), '8.750"');
+  assert.equal(inches3(L.rects.spineSafe.width), '0.017"');
+  assert.equal(inches3(11.4075), '11.408"'); // half up, despite 11.4075 being stored as 11.40749…
+});
+
+await test('footer date: the latest lastVerified anywhere in the config', () => {
+  assert.equal(latestVerified(specs), '2026-11-06');
+  assert.equal(latestVerified({ _meta: { lastVerified: '2026-01-02' }, a: { lastVerified: '2025-12-31' }, b: { c: { lastVerified: '2026-03-04' } } }), '2026-03-04');
 });
 
 console.log(`${passed} tests passed`);
