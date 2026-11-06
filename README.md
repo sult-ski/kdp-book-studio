@@ -84,4 +84,6 @@ npx vercel deploy --prod   # production, only after the owner approves
 - `public/pdfjs/`: pdf.js fonts, cmaps and image decoders. `npm run assets` copies them from node_modules; it runs before dev and build, and the folder is git-ignored.
 - `PLAN.md`: the milestone plan. Phase 1 (interior preflight) is complete. Later phases cover a cover checker, a spine calculator and auto-fixes.
 
-KDP Book Studio is an independent tool, not made by or affiliated with Amazon.
+## License
+
+MIT, see [LICENSE](LICENSE). KDP Book Studio is an independent tool, not made by or affiliated with Amazon.
