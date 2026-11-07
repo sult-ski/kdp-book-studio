@@ -1,0 +1,262 @@
+KDP Deep Content Check: Evidence-Based Rules for a Browser-Side Manuscript
+Scanner
+Text rules alone can reliably catch the issues that Amazon most clearly rejects in a manuscript: placeholder text (lorem ipsum), Project Gutenberg
+boilerplate, links to or mentions of other ebook stores, leftover AI chatbot text, bonus content placed at the front, and duplicated passages. Other big
+causes of blocks, including undifferentiated public-domain text, text that is freely available on the web, copyright and lyrics, and erotica rules, can only be
+partly detected, so the checker should raise warnings for these, not give a pass or fail.
+
+
+TL;DR
+   Highest-value checks backed by official rules: placeholder text (KDP's print guidelines say "We will reject any files with placeholder text, such as Lorem
+   Ipsum"); media-amazon links to "commercial eBook store sites other than Amazon"; Gutenberg license and header text, which is a sign of
+   undifferentiated public-domain content; bonus content placed before the main content; duplicated chapters or passages; and companion guides or
+   summaries.
+   AI text: KDP requires you to disclose AI-generated text, images and translations in the dashboard, and a text scanner can't check that box for you.
+   undetectable amazon Leftover chatbot phrases have appeared in named published books: Lena McDonald's Darkhollow Academy: Year 2, chapter 3
+   ("I've rewritten the passage to align more with J. Bree's style…", per 404 Media, May 23, 2025), and K.C. Crowne's Dark Obsession ("Thought for 13
+   seconds. Here's an advanced version of your passage…", per the Daily Dot and Slashdot's summary of 404 Media). Rania Faris's Rogue Souls was also
+   named. These caused reader backlash. No source shows KDP itself removing a book because of them.
+   Weak or unknown evidence (warn only): words like "Kindle Unlimited" or "Amazon" inside the interior (KDP's official trademark limits apply to metadata
+   fields, and no interior-enforcement case was found); review requests in back matter (polite requests are reported as fine, incentives are not); single lines
+   of song lyrics (the risk is legal, and documented KDP blocks are thin).
+
+
+Key Findings
+Evidence key: official = KDP Help or Terms text; reported = author or news account; both = official rule plus a reported case. Speculation is left out. Where
+the rule covers metadata (title, description, keywords) rather than the interior, the table says so. The checker can scan metadata too if the user pastes it in.
+
+
+  Issue               Exact phrases / patterns to detect
+
+
+
+  Placeholder /       /lorem ipsum|dolor sit amet|consectetur adipiscing/i ; /\[(insert|your|author|add|enter)[^\]]*\]/i ; /\bChapter (X|XX|\?\?)\b/
+  template text       Name Here", "Book Title Here", "Click here to add text", "Type your text here", "Insert chapter here". Also check running heads and the copyright page pu
+
+
+
+  Leftover AI         "As an AI language model", "As of my last knowledge update", "I've rewritten the passage", "Here's an advanced version of your passage", /Thought for
+  chatbot text        know if you'd like", "Would you like me to", "in the style of [author]", /to align more with .{1,40}'s style/ , "Regenerate response", "[Your Name]"
+
+
+                      Can't be found in the text. Any hit from the row above → prompt the user: "AI-generated text, images or translations must be disclosed in KDP's publish
+  AI disclosure
+                      afterwards"; AI-assisted editing or brainstorming does not need it publishflow isbndirect amazon
+
+
+
+  Project
+                      /\*{3}\s*START OF (THE|THIS) PROJECT GUTENBERG EBOOK/i , /\*{3}\s*END OF (THE|THIS) PROJECT GUTENBERG/i , "THE FULL PROJECT GUT
+  Gutenberg
+                      Archive Foundation", "gutenberg.org", "This eBook is for the use of anyone anywhere", "Produced by", "Distributed Proofreaders", "Transcriber's Note"
+  boilerplate
+
+
+
+
+  Undifferentiated
+                      If PG or PD signals are present (row above, or "first published 18xx/19xx", a known classic title) → warn: the edition must be Translated, Annotated (stud
+  public-domain
+                      original illustrations), and the title field must include "(Translated)", "(Annotated)" or "(Illustrated)". amazon Rough check: share of original prose vs. quote
+  work
+
+
+
+
+  Freely available
+                      "originally published on", "first appeared on my blog", "Wattpad", "Royal Road", "Archive of Our Own", "AO3", "fanfiction.net", "Creative Commons", "CC BY
+  / non-exclusive
+                      (blocks of attributed text)
+  content
+Issue              Exact phrases / patterns to detect
+
+
+Companion
+guides /           /^(summary|study guide|workbook|analysis) (of|for)\b/im , "Summary of [Title] by", "Workbook for", "Key Takeaways from", "This is an unofficia
+summaries
+
+
+Links /            URLs:
+references to      /(books\.apple\.com|itunes\.apple\.com|kobo\.com|barnesandnoble\.com|nook|smashwords\.com|draft2digital\.com|books2read\.com|
+other stores       text: /available (on|at|from) .{0,40}(Apple Books|iBooks|Kobo|Barnes|Nook|Google Play|Smashwords|all (major )?retailers)/i
+
+
+
+Prohibited link    Newsletter or sign-up form links ( /(mailchimp|list-manage|convertkit|kit\.com|mailerlite|bookfunnel|substack\.com\/subscribe|forms\
+types (other)      URLs; URL shorteners (bit.ly)
+
+
+
+KDP Select
+(Kindle+/KU)
+                   Same store patterns as above, plus "also available on [store]", "free on my website", "read the full book free at", "download a free copy of this book"
+exclusivity
+conflicts
+
+
+Front-loaded
+bonus content /    Before the first chapter heading: "Sneak Peek", "Preview of", "Bonus Story", "Excerpt from", "Also by" blocks longer than one page; bonus or back matter
+previews
+
+Redirect /
+subscription /
+                   "to continue reading", "read the rest at", "download the full", "subscribe to get the next chapter", "access the full content at", "scan the QR code to read",
+incomplete
+content
+
+TOC / link
+page-read          TOC placed at the end; "click here to jump to the end", repeated /click here/i , links near the start that jump to the back
+manipulation
+
+
+Duplicated /
+repeated           Hash paragraphs (≥40 words) and flag repeats; repeated chapter headings ( /^Chapter 7$/ twice); very high n-gram repetition across the book
+content
+
+
+Missing / wrong
+                   Cross-references to sections that don't exist ("see Chapter 14" when there are 12 chapters); "[image]", "Figure 3" with no image; manuscript title ≠ metad
+content
+
+
+
+Too short / thin
+                   Word count, words per page, share of blank pages
+content
+
+
+
+
+Machine / poor
+                   Signs a translation has no credit ("Translated by" missing when "Originally published in [language]" is present); leftover MT text ("Translated by Google",
+translation
+
+
+
+
+Misleading /
+advertising /
+                   Interior or front pages full of keyword lists ( /(\b\w+\b)(,\s*\1-?\w*){5,}/ ), "bestselling", "#1 bestseller", "free", "best book ever" in title pages; >30%
+keyword-
+stuffed text
+  Issue               Exact phrases / patterns to detect
+
+
+  Trademarks:
+  Amazon /
+                      /\b(Kindle Unlimited|Kindle\+|KDP Select|Kindle Direct Publishing|KDP|Amazon(\.com)?|Audible|CreateSpace)\b/ on title page, copyr
+  Kindle / KDP /
+                      imprint
+  Kindle
+  Unlimited
+
+
+  Third-party
+  brand / title /     Title page or subtitle with famous brands or franchises (user-supplied list: Disney, LEGO, Minecraft, Pokémon, Harry Potter…), "unofficial", "inspired by [
+  author names
+
+
+
+
+  Song lyrics /
+                      Short lines broken like verse inside quote marks with attribution: /["“].{5,80}["”]\s*[—–-]\s*[A-Z]/ ; "lyrics by", "words and music by", "(from the
+  long quotations
+
+
+
+
+  Offensive
+  content (all        Hate-speech slur lexicon; terrorism-advocacy phrases
+  genres)
+
+
+
+
+  Erotica
+                      Co-occurrence of explicit sexual terms with: minor or age terms ( /\b(1[0-7]|teen|underage|schoolgirl|preteen)\b/ ), family terms (step-, brothe
+  restrictions
+
+
+
+  Children's books
+  with adult          Any explicit sexual term, profanity or graphic violence lexicon when the user selects a children's category or reading age
+  content
+
+
+
+
+  Review requests
+                      Allowed-ish: "please leave a review". Flag: `/(5
+  / incentives
+
+
+
+
+  Description-
+  field content (if   Phone numbers, emails, URLs, review quotes, "free", dates, prices, "available on" amazon
+  pasted)
+
+
+
+Details
+How enforcement works (official). KDP says it uses "a combination of machine learning, automation, and dedicated teams of human reviewers" and will
+"reject or remove content that does not adhere to these guidelines." cleanpagepress amazon amazon The Content Quality guide divides problems into
+Critical (removed from sale until fixed), Destructive and Distracting issues. amazon Repeat violations can affect your account. Content rejection emails
+reported on KDP Community warn that further similar submissions may lead to the account being "terminated or you may lose access to optional KDP
+services." goodreads book-business-kdp-amazon
+
+Public domain is the clearest case where a content problem can lead to account suspension. In a 2012 Warrior Forum thread, user "Calamaroo" wrote: "I
+had 70 ebooks on Amazon Kindle. Ten of these used public domain works that I got from Project Gutenberg." The account was first "temporarily blocked"
+because those works were not "differentiated", then terminated even after the poster removed the ten. This is a single, unverified account, but it matches
+KDP's official PD rules. Gutenberg boilerplate in a manuscript is the strongest text signal that the edition is undifferentiated. Gutenberg's own license also
+requires you to remove it if you sell the text. omeka gutenberg
+
+AI leftovers cause reputation damage; KDP enforcement is not documented. In the Lena McDonald case (Darkhollow Academy: Year 2), the leftover
+prompt text was later removed from the Amazon version. 404 Media reported: "Searching for it on the site won't show the book, but a Google search will.
+404 Media was able to purchase a copy and confirm that the book no longer contains the reference to copying Bree's style." 404 Media did not confirm that
+KDP removed it. Treat this as a check that protects quality and reputation, and pair it with a reminder about disclosure.
+
+Freely available content is checked by bots, but the browser can't check the web. kdpcommunity KDP Community reports quote KDP's email: "we found
+content that is freely available on the web… please provide… An explanation as to why the content is available online." kdpcommunity A community
+member noted that "KDP usually gives five days to clear up the problem." kdpcommunity Client-side, the checker can only catch self-declared sources
+(Wattpad, blog, PLR).
+
+Kindle Unlimited is now Kindle+. writtenwordmedia The KDP Help navigation now shows "Kindle+" in place of Kindle Unlimited. amazon amazon Any
+trademark or exclusivity rule should match both names.
+
+
+Recommendations — Top 15 checks ranked by impact (likelihood of block/unpublish/suspension ×
+detectability)
+ 1. Project Gutenberg header/footer/license text: PD differentiation rule plus account-level risk; regex is exact. warriorforum amazon Block-level warning.
+ 2. Placeholder text (lorem ipsum, [Insert…], TODO, Chapter X): officially rejected; near-perfect detection. media-amazon publishing
+ 3. Links to non-Amazon ebook stores (Apple, Kobo, B&N, Google Play, Smashwords, D2D, Books2Read): officially prohibited; URL regex is exact.
+    ebookpbook amazon
+ 4. Front-loaded bonus content / previews before Chapter 1, or bonus >~10%: a Critical Issue; detect by position and ratio. amazon amazon
+ 5. Duplicated chapters/paragraphs: Critical when mislabeled; paragraph hashing is reliable.
+ 6. Leftover AI chatbot text + disclosure reminder: frequent, damaging, exact phrases.
+ 7. Freely-available/PLR source declarations (Wattpad, Royal Road, "originally published on", PLR/resell rights): documented blocks; partial detection.
+ 8. Companion guide/summary patterns: officially "not allowed" with narrow exceptions.
+ 9. Redirect/incomplete content ("to continue reading…", QR to full text): Critical when main content is external.
+10. Erotica taboo co-occurrence (sexual terms + minor/family/non-consent/bestiality terms): high severity; partial detection, so route to human review.
+11. Children's-category + explicit/violent lexicon: official category ineligibility; easy lexicon check once the user picks the audience.
+12. Incentivized review language (5-star, gift card, "in exchange for a review"): official review-policy violation; exact phrases. book-business-kdp-amazon
+13. Newsletter/web-form links: officially listed as prohibited links; enforcement frequency unknown, so warn.
+14. Metadata mismatch (manuscript title/ISBN vs. entered metadata; Amazon/Kindle/KDP in the publisher line): official; needs user input.
+15. Song lyrics / long in-copyright quotations: legal and KDP permission-request risk; low-precision heuristics, so make it an advisory only.
+
+Implementation notes: Let users mark context (genre, PD-annotated edition, AI-themed book, typography book, hymnal or liturgy, KDP Select yes/no,
+children's audience), since these settings remove most false positives. Show every flag with its evidence level and the source URL. Never auto-fail on
+"partly" checks.
+
+
+Caveats
+   Unknown: a minimum length for "too short"; any interior-text enforcement against "Kindle Unlimited"/"Amazon" mentions (no case found); how often
+   newsletter-link and plain-text store mentions are actually enforced; whether KDP itself removed any of the AI-prompt books.
+   Some "reported" sources are SEO-oriented 2026 blogs (e.g., formatmyebook.com, cruxone.io) or older forum anecdotes; they are listed as corroboration
+   only, never as the sole basis for a hard block.
+   The placeholder rule comes from KDP's 2018 Print Publishing Guidelines PDF; current ebook pages don't repeat it word for word, though "missing
+   content" and quality rules cover it. media-amazon
+   The 10% KDP Select sample allowance comes from the old KDP Select FAQ (as quoted on Goodreads in 2014: "you may choose to make up to 10% of
+   your book available on other sites as a sample") and a 2012 support email, not the current Terms.
+   Rules change; re-check the cited KDP Help pages before each release of the checker.
+

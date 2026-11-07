@@ -1,0 +1,25 @@
+# Sources linked in deep-content-research.pdf (extracted 2026-11-07)
+- https://m.media-amazon.com/images/G/01/kindle-publication/KDP_Print_Publishing_Guidelines_01_24_2018._CB1516837113_.pdf
+- https://undetectable.ai/blog/books-written-by-ai-on-amazon/
+- https://kdp.amazon.com/en_US/help/topic/G200672390
+- https://publishing.co.uk/guides/kdp-error-lorem-ipsum-detected/
+- https://publishflow.ai/knowledge-hub/blog/can-amazon-detect-ai-books/
+- https://isbndirect.com/blog/amazon-kdps-ai-disclosure-rule-now-covers-books-you-already-published
+- https://kdp.amazon.com/en_US/help/topic/G200743940
+- https://kdp.amazon.com/en_US/help/topic/G201097560
+- https://cleanpagepress.com/blog/amazon-kdp-rejected-my-book/
+- https://kdp.amazon.com/en_US/help/topic/G200952510
+- https://www.goodreads.com/author_blog_posts/6820932-follow-up-email-from-amazon-regarding-my-book-s-ban
+- https://book-business-kdp-amazon.com/en/blog/what-you-cant-change-after-publishing-kdp/
+- https://studentforestersonlineresource.omeka.net/project-gutenberg-license
+- https://www.gutenberg.org/policy/license.html
+- https://kdpcommunity.com/s/question/0D58V00009Ku17hSAB/kindles-exclusivity-policy?language=en_US
+- https://www.kdpcommunity.com/s/question/0D5f400000FHsdMCAT/book-blocked-and-no-i-did-not-steal-content-from-the-web?language=en_US
+- https://kdpcommunity.com/s/question/0D52T00005CcHZoSAN/kindle-ebook-blocked?language=en_US
+- https://www.writtenwordmedia.com/kindle-plus-for-authors/
+- https://kdp.amazon.com/en_US/select
+- https://kdp.amazon.com/en_US/help/topic/G200798990
+- https://www.warriorforum.com/main-internet-marketing-discussion-forum/552270-amazon-kindle-kdp-account-terminated.html
+- https://www.ebookpbook.com/2026/05/13/ebook-hyperlinks-kindle-broken/
+- https://kdp.amazon.com/en_US/help/topic/G202018960
+- https://book-business-kdp-amazon.com/en/blog/how-to-get-book-reviews-on-amazon/
