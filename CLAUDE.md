@@ -26,6 +26,7 @@ Phase 1 of KDP Book Studio: a client-side KDP paperback **interior** preflight c
 - Work ONE milestone at a time from `PLAN.md`. When a milestone is done: run `npm test`, run the app and check it in the browser, tick the milestone in PLAN.md, summarise in a few lines, then STOP and wait for the owner to say "next".
 - Every check gets Node tests using generated fixture PDFs (`tests/fixtures/make-fixtures.mjs`).
 - Keep replies short. End long replies with a "Simplified Summary": key points + next step.
+- Milestone/task reports: max 12 lines — what changed, test count, decisions needing the owner's input, next step. Start a finished milestone's report with "✅ MILESTONE <name> COMPLETE".
 - If a KDP rule looks wrong or unclear, check the source URL in the config and tell the owner; don't guess.
 
 ## Commands
