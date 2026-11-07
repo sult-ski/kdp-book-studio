@@ -92,7 +92,7 @@ export function checkCoverSize(specs, page, L, settings) {
 export function checkCoverPages(specs, pageCount) {
   if (pageCount <= 1) return [];
   return [{
-    id: 'cover-pages', checkId: 'coverPages', severity: 'warn', page: null,
+    id: 'cover-pages', checkId: 'coverPages', severity: 'fail', page: null,
     measured: `${pageCount} pages`, required: '1 page',
     message: `Your cover PDF has ${pageCount} pages. KDP needs the whole cover (back, spine and front) as a single page. Only the first page was checked.`,
     fix: 'Export just the cover as a one-page PDF, with the back cover, spine and front cover side by side.',

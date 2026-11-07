@@ -10,7 +10,7 @@ const $ = (id) => document.getElementById(id);
 const MB = 1e6;
 // Cover rules not checked yet. Listed so authors know to check them against the template.
 const NOT_CHECKED_YET = [
-  'Text inside the safe area (0.25" from the trim) and clear of the fold lines',
+  'Text converted to outlines or drawn into images: only live text is checked against the safe area and fold lines',
   'Fonts embedded, and text at least 7 pt',
   'Image resolution (300 DPI)',
   'Barcode area kept clear',

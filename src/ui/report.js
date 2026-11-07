@@ -234,6 +234,10 @@ function rowTitle(g, count, specs) {
     case 'coverSpineText':
       return g.severity === 'fail' ? `Spine text under ${specs.cover.spineText.minPages} pages` : `Spine text at ${specs.cover.spineText.minPages} pages`;
     case 'coverPages': return `Cover PDF has ${g.measured}`;
+    case 'coverSafeArea':
+      return `Text outside the safe area (${{ 'safe-area-back': 'back cover', 'safe-area-spine': 'spine' }[g.groupKey] ?? 'front cover'})`;
+    case 'coverFold': return 'Spine text crosses a fold line';
+    case 'coverSpineEdge': return 'Spine text close to the spine edge';
     case 'fileRules':
       if (g.id.startsWith('file-comments')) return 'Comments or markup on the page';
       if (g.id.startsWith('file-links')) return 'Clickable links';

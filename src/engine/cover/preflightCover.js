@@ -6,6 +6,7 @@ import { sortIssues } from '../runChecks.js';
 import { coverLayout } from './layout.js';
 import { checkCoverSize, checkCoverPages } from './checks/coverSize.js';
 import { checkSpineText } from './checks/spineText.js';
+import { checkCoverZones } from './checks/zones.js';
 
 /**
  * @param {object} specs
@@ -28,6 +29,9 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
       str, x: x0 / render.dpi, y: y0 / render.dpi, width: (x1 - x0) / render.dpi, height: (y1 - y0) / render.dpi,
     }));
     issues.push(...checkSpineText(specs, textBoxes, L, settings));
+    // Zones only make sense on a cover of the right size; otherwise the size issue explains what to fix.
+    const sizeOk = !issues.some((i) => i.checkId === 'coverSize' && i.severity === 'fail');
+    if (sizeOk) issues.push(...checkCoverZones(specs, textBoxes, L, { toleranceIn: 1 / render.dpi }));
     if (onPage) await onPage({ page: first, render, issues });
   } finally {
     await doc.loadingTask.destroy();

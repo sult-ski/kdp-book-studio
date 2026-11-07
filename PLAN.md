@@ -17,7 +17,7 @@ Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-p
 Tabs alongside the interior checker, same design system, 100% client-side. Specs in `kdp-specs.json` → `cover`.
 - [x] **C1 — Tabs + Calculator.** Spine width, full cover size, to-scale diagram, downloadable PDF template with guides (trim, bleed, safe area, spine, barcode box).
 - [x] **C2 — Cover size + spine check.** Cover tab: upload cover PDF, compare its size to the calculated size (tolerance), spine text only from 79 pages.
-- [ ] **C3 — Safe area, spine text and fold lines.** Reuse render-and-scan: text outside safe area (fail), text within 0.0625" of fold lines (warn), spine text too close to spine edge (warn).
+- [x] **C3 — Safe area, spine text and fold lines.** Live text outside the safe area (fail), spine text crossing a fold line (warn), spine text within 0.0625" of the spine edge (warn), multi-page cover PDF (fail). Outlined text can't be told from cover art: listed under "Not checked yet".
 - [ ] **C4 — Fonts, DPI, barcode.** Reuse the interior engine for fonts and image DPI; text under 7 pt; barcode area check (best-effort info).
 - [ ] **C5 — Cover report UI.** Zone overlay thumbnail; real-cover test with the owner's own book cover.
 

@@ -1,9 +1,8 @@
 // Phase 2, milestone C2 tests: cover size (with diagnosis of common mistakes) and spine text vs page count.
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-import { PDFDocument, degrees } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { embedGaramond } from './fixtures/make-fixtures.mjs';
+import { makeCover } from './fixtures/make-cover.mjs';
 import { preflightCover } from '../src/engine/cover/preflightCover.js';
 import { coverLayout } from '../src/engine/cover/layout.js';
 
@@ -11,28 +10,6 @@ const specs = JSON.parse(readFileSync(new URL('../src/config/kdp-specs.json', im
 const env = { pdfjs, docOptions: { standardFontDataUrl: 'node_modules/pdfjs-dist/standard_fonts/' } };
 let passed = 0;
 const test = async (name, fn) => { await fn(); passed++; console.log('✓', name); };
-const PT = 72;
-
-/**
- * A cover PDF. `text` items are placed by centre, in inches from the top-left; `rotate` 90 = spine text.
- * @param {{ w:number, h:number, pages?:number, text?:Array<{ str:string, cx:number, cy:number, size?:number, rotate?:number }> }} o
- */
-async function makeCover({ w, h, pages = 1, text = [] }) {
-  const doc = await PDFDocument.create();
-  const font = await embedGaramond(doc);
-  for (let i = 0; i < pages; i++) {
-    const page = doc.addPage([w * PT, h * PT]);
-    if (i > 0) continue;
-    for (const { str, cx, cy, size = 10, rotate = 0 } of text) {
-      const len = font.widthOfTextAtSize(str, size);
-      const x = cx * PT;
-      const y = (h - cy) * PT;
-      if (rotate === 90) page.drawText(str, { font, size, x: x + size * 0.35, y: y - len / 2, rotate: degrees(90) });
-      else page.drawText(str, { font, size, x: x - len / 2, y: y - size * 0.35 });
-    }
-  }
-  return doc.save();
-}
 
 const CREAM_120 = { trim: '6x9', inkPaper: 'bw_cream', pages: 120 }; // spine 0.3", cover 12.55" x 9.25"
 const run = async (bytes, settings = CREAM_120) => preflightCover(specs, bytes, settings, env);
@@ -130,10 +107,10 @@ await test('spine text from 80 pages: nothing to report; text on the covers is n
   assert.deepEqual(ofCheck(await run(front, s60), 'coverSpineText'), []);
 });
 
-await test('more than one page: warn, only the first page is checked', async () => {
+await test('more than one page: fail (Must fix), only the first page is checked', async () => {
   const r = await run(await makeCover({ w: 12.55, h: 9.25, pages: 3 }));
   const [i] = ofCheck(r, 'coverPages');
-  assert.equal(i.severity, 'warn');
+  assert.equal(i.severity, 'fail');
   assert.match(i.message, /3 pages/);
   assert.deepEqual(ofCheck(r, 'coverSize'), []);
 });
