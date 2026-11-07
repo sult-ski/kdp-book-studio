@@ -21,6 +21,17 @@ Tabs alongside the interior checker, same design system, 100% client-side. Specs
 - [ ] **C4 — Fonts, DPI, barcode.** Reuse the interior engine for fonts and image DPI; text under 7 pt; barcode area check (best-effort info).
 - [ ] **C5 — Cover report UI.** Zone overlay thumbnail; real-cover test with the owner's own book cover.
 
+## Phase 2.5: Deep content check (start only after C5 is done)
+Optional text scan of the interior, 100% client-side, no APIs. Based on `docs/research/deep-content-research.pdf` (Top 15 checks). Rules live in a new `content` section of `kdp-specs.json`: phrase/regex lists, `evidence: official | reported | both`, source URL (from the research PDF's links) and lastVerified. Issues show the matched snippet and page number. Exact-pattern rules (Gutenberg markers, lorem ipsum, store URLs) are `verified`; heuristic rules are `best-effort`. Text inside images or converted to outlines can't be read; say so in the report.
+- **Must fix:** Project Gutenberg text, placeholder text, links to non-Amazon ebook stores.
+- **Worth checking:** bonus content before Chapter 1, duplicate chapters/paragraphs, AI chatbot leftovers (+ AI disclosure reminder), freely available/PLR sources, summary/companion guide patterns, redirect/incomplete content, incentivised review language, metadata mismatch, erotica taboo co-occurrence, children's audience + explicit words.
+- **Good to know:** newsletter/sign-up links, lyrics/long quotes.
+- **Not supported:** copyright/plagiarism against the web (listed in the report).
+- [ ] **D1 — Text extraction + rule engine + 5 rules.** Per-page text (pdf.js) with page numbers and links; rule engine reading the `content` config; Gutenberg, placeholder, store links, AI chatbot leftovers (+ disclosure reminder), newsletter links.
+- [ ] **D2 — Structure rules.** Bonus content position/ratio, duplicate paragraphs (≥40 words, hashed) and repeated chapter headings, redirect/incomplete content; also freely-available/PLR, summary/companion guide, incentivised reviews, lyrics/long quotes.
+- [ ] **D3 — Genre/audience + metadata.** Genre/audience settings with the research's exceptions (public-domain annotated edition, AI-themed book, hymnal/liturgy, children's audience…); erotica taboo co-occurrence; children's + explicit lexicon; pasted title/author/ISBN vs the manuscript (and Amazon/Kindle/KDP in the publisher line).
+- [ ] **D4 — UI.** Optional "Deep content check" toggle on the Interior tab with genre/audience select and optional metadata fields; snippet rows with page numbers in the existing report groups; "Copyright/plagiarism vs the web" under Not supported. Verify at desktop and 360px.
+
 ## Test fixtures (generated with pdf-lib)
 good-6x9-120p (passes all) · wrong-size · tiny-margins (text at 0.15") · gutter-212p (text 0.31" from binding → needs 0.5") · low-dpi (150 DPI) · unembedded-font · bleed-art-short · 6-consecutive-blanks · annotated · encrypted
 
