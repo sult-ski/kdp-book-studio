@@ -8,12 +8,10 @@ import { initFilePicker } from './filePicker.js';
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6;
-// Cover rules not checked yet. Listed so authors know to check them against the template.
+// Cover rules not checked (or only partly checked). Listed so authors know to check them against the template.
 const NOT_CHECKED_YET = [
-  'Text converted to outlines or drawn into images: only live text is checked against the safe area and fold lines',
-  'Fonts embedded, and text at least 7 pt',
-  'Image resolution (300 DPI)',
-  'Barcode area kept clear',
+  'Text converted to outlines or drawn into images: only live text is checked against the safe area, fold lines and 7 pt minimum',
+  'Barcode area: we check that it looks clear and white, but cannot tell your own barcode from artwork',
 ];
 
 let worker;
@@ -119,7 +117,7 @@ function detailsHtml({ specs, summary, pages, layout: L, file, settings }) {
           <dt>Cover size needed</dt><dd>${inches3(L.widthIn)} x ${inches3(L.heightIn)}</dd>
           <dt>Your cover</dt><dd>${inches3(p.widthIn)} x ${inches3(p.heightIn)}</dd>
         </dl>
-        <h3>Not checked yet</h3>
+        <h3>Not fully checked</h3>
         <p>Compare these with the template from the Cover calculator tab:</p>
         <ul class="selfcheck">${NOT_CHECKED_YET.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
         <p><a href="${esc(sourceUrl(specs, specs.cover.size))}" target="_blank" rel="noopener">KDP's paperback cover guidelines</a></p>

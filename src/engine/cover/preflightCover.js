@@ -7,6 +7,17 @@ import { coverLayout } from './layout.js';
 import { checkCoverSize, checkCoverPages } from './checks/coverSize.js';
 import { checkSpineText } from './checks/spineText.js';
 import { checkCoverZones } from './checks/zones.js';
+import { checkBarcodeArea } from './checks/barcode.js';
+import { checkFonts } from '../checks/fonts.js';
+import { checkPageImages } from '../checks/imageDpi.js';
+import { checkPageFontSize } from '../checks/fontSize.js';
+
+/** The interior checks read specs.fonts / specs.images; on a cover they use the cover's values and sources. */
+const forCover = (specs) => ({
+  ...specs,
+  fonts: { ...specs.fonts, ...specs.cover.fonts },
+  images: { ...specs.images, ...specs.cover.images },
+});
 
 /**
  * @param {object} specs
@@ -20,18 +31,29 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
   if (pdf.error) return { error: pdf.error };
   const L = coverLayout(specs, settings);
   const first = pdf.pages[0];
-  const issues = [...checkCoverPages(specs, pdf.pageCount), ...checkCoverSize(specs, first, L, settings)];
+  const cs = forCover(specs);
+  // Fonts: only those used on the cover page (page 1); extra pages are already a Must fix.
+  const coverFonts = pdf.fonts && pdf.fonts.map((f) => ({ ...f, pages: f.pages.filter((n) => n === 1) })).filter((f) => f.pages.length);
+  const issues = [
+    ...checkCoverPages(specs, pdf.pageCount),
+    ...checkCoverSize(specs, first, L, settings),
+    ...checkFonts(cs, { ...pdf, fonts: coverFonts }),
+  ];
 
   const doc = await openWithPdfjs(pdfjs, bytes, docOptions);
   try {
-    const { render } = await inspectPage(pdfjs, doc, 1, { dpi: specs.app.renderDpi, render: true });
+    const { images, render } = await inspectPage(pdfjs, doc, 1, { dpi: specs.app.renderDpi, render: true });
+    issues.push(...checkPageImages(cs, first, images), ...checkPageFontSize(cs, first, render));
     const textBoxes = render.textItems.map(({ str, rect: [x0, y0, x1, y1] }) => ({
       str, x: x0 / render.dpi, y: y0 / render.dpi, width: (x1 - x0) / render.dpi, height: (y1 - y0) / render.dpi,
     }));
     issues.push(...checkSpineText(specs, textBoxes, L, settings));
     // Zones only make sense on a cover of the right size; otherwise the size issue explains what to fix.
     const sizeOk = !issues.some((i) => i.checkId === 'coverSize' && i.severity === 'fail');
-    if (sizeOk) issues.push(...checkCoverZones(specs, textBoxes, L, { toleranceIn: 1 / render.dpi }));
+    if (sizeOk) {
+      issues.push(...checkCoverZones(specs, textBoxes, L, { toleranceIn: 1 / render.dpi }));
+      issues.push(...checkBarcodeArea(specs, render, L));
+    }
     if (onPage) await onPage({ page: first, render, issues });
   } finally {
     await doc.loadingTask.destroy();
