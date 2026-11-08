@@ -5,6 +5,8 @@ import { checkFonts } from './checks/fonts.js';
 import { checkFileRules } from './checks/fileRules.js';
 import { checkTransparency } from './checks/transparency.js';
 
+import { uniquePages } from './summarize.js';
+
 const SEVERITY_ORDER = { fail: 0, warn: 1, info: 2 };
 
 /**
@@ -62,6 +64,7 @@ export function groupIssues(issues) {
       g.worstPage = i.page;
     }
   }
+  for (const g of groups.values()) g.pages = uniquePages(g.pages);
   return [...groups.values()].sort((a, b) =>
     SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (a.pages[0] ?? 0) - (b.pages[0] ?? 0));
 }

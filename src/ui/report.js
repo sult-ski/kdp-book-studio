@@ -159,6 +159,7 @@ function rowHtml(g, { issues, pageInfo, thumbs, specs, onePageLabel }) {
         ${snippetsHtml(members)}
         ${proofsHtml(g, members, pageInfo, thumbs)}
         <p class="issue__links"><a href="${esc(g.source)}" target="_blank" rel="noopener">${esc(g.sourceLabel ?? 'Why KDP asks for this')}</a>${g.reportedSource ? ` · <a href="${esc(g.reportedSource.url)}" target="_blank" rel="noopener">Reported case</a>` : ''}</p>
+        ${g.sourceNote ? `<p class="issue__note">${icon('info')} ${esc(g.sourceNote)}</p>` : ''}
         ${accuracy}
       </div>
     </details>`;
@@ -253,7 +254,7 @@ function rowTitle(g, count, specs) {
         'pageCount-high': `Too many pages (${g.measured})`, 'pageCount-unavailable': 'Trim size not available with this paper' }[g.id]
         ?? shortMessage(g.message);
     case 'fonts':
-      if (g.severity === 'fail') return `Font not embedded (${g.measured.replace(/ not embedded$/, '')})`;
+      if (g.id.startsWith('fonts-unembedded')) return `Font not embedded (${g.measured.replace(/ not embedded$/, '')})`;
       return g.severity === 'info' ? 'Fonts embedded as subsets' : "Font list couldn't be read";
     case 'fontSize': return `Text under ${specs.fonts.minSizePt} pt`;
     case 'images': {

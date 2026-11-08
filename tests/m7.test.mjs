@@ -6,6 +6,7 @@ import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { preflight } from '../src/engine/preflight.js';
 import { pageLayout } from '../src/engine/layout.js';
 import { groupIssues, issueGroupKey } from '../src/engine/runChecks.js';
+import { formatPageList, uniquePages } from '../src/engine/summarize.js';
 import { fixtures, makeTextBook } from './fixtures/make-fixtures.mjs';
 
 const specs = JSON.parse(readFileSync(new URL('../src/config/kdp-specs.json', import.meta.url)));
@@ -63,6 +64,17 @@ await test('every issue maps to exactly one report group via issueGroupKey', asy
   const keys = new Set(groupIssues(r.issues).map((g) => g.key));
   assert.ok(r.issues.every((i) => keys.has(issueGroupKey(i))));
   assert.equal(keys.size, 1);
+});
+
+await test('page lists: repeats removed, sorted, ranges compressed (3 unembedded fonts on 56 pages = 56 pages)', () => {
+  assert.equal(formatPageList([1, 1, 2, 2, 3, 7, 7]), '1-3, 7');
+  assert.equal(formatPageList([3, 1, 2]), '1-3');
+  assert.deepEqual(uniquePages([2, null, 2, 1]), [1, 2]);
+  const issues = ['A', 'B', 'C'].flatMap(() => Array.from({ length: 56 }, (_, k) => ({
+    id: `fonts-unembedded-x-p${k + 1}`, checkId: 'fonts', severity: 'warn', page: k + 1, message: 'm', measured: 'x' })));
+  const [g] = groupIssues(issues);
+  assert.equal(g.pages.length, 56);
+  assert.equal(formatPageList(g.pages), '1-56');
 });
 
 console.log(`\n${passed} tests passed`);

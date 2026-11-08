@@ -69,7 +69,7 @@ async function withLine(sizePt, color = rgb(0, 0, 0)) {
 await test('text under 7 pt warns (best-effort) with the smallest size and a sample', async () => {
   const issues = of(await run(await withLine(6)), 'fontSize');
   assert.deepEqual(issues.map((i) => [i.id, i.severity, i.accuracy, i.measured, i.required]),
-    [['fontSize-p3', 'warn', 'best-effort', '6 pt', '7 pt']]);
+    [['fontSize-p3', 'info', 'best-effort', '6 pt', '7 pt']]);
   assert.match(issues[0].message, /smaller than 7 pt \(smallest 6 pt, for example "Footnote text here"\)/);
   assert.ok(issues[0].bbox.width > 0 && issues[0].bbox.height > 0);
   assert.match(issues[0].fix, /LibreOffice/);

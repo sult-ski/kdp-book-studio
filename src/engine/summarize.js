@@ -20,8 +20,14 @@ export function summarize(specs, pdf, settings) {
   };
 }
 
-/** "1-3, 7, 9-12" from [1,2,3,7,9,10,11,12] */
-export function formatPageList(nums) {
+/** Sorted page numbers without repeats (an issue list can hold one entry per font or image per page). */
+export function uniquePages(nums) {
+  return [...new Set(nums.filter((n) => n != null))].sort((a, b) => a - b);
+}
+
+/** "1-3, 7, 9-12" from [1,2,3,7,9,10,11,12]; repeats and order don't matter. */
+export function formatPageList(input) {
+  const nums = uniquePages(input);
   const out = [];
   for (let i = 0; i < nums.length; i++) {
     let j = i;

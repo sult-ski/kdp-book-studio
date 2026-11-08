@@ -20,7 +20,7 @@ const ids = (issues) => issues.map((i) => i.id);
 await test('unembedded font fails on each page it is used, grouped into one line', async () => {
   const issues = await check(await fixtures['unembedded-font']());
   assert.deepEqual(issues.map((i) => [i.checkId, i.severity, i.page]),
-    [['fonts', 'fail', 3], ['fonts', 'fail', 4], ['fonts', 'fail', 5]]);
+    [['fonts', 'warn', 3], ['fonts', 'warn', 4], ['fonts', 'warn', 5]]);
   assert.match(issues[0].message, /"Helvetica" is not embedded/);
   assert.equal(issues[0].accuracy, 'verified');
   const groups = groupIssues(issues);

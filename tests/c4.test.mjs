@@ -24,10 +24,11 @@ await test('clean cover: no font, DPI, size or barcode issues', async () => {
   for (const c of ['fonts', 'images', 'fontSize', 'coverBarcode']) assert.deepEqual(byCheck(r, c), [], c);
 });
 
-await test('unembedded font on the cover: fail, verified', async () => {
+await test('unembedded font on the cover: Worth checking (owner decision: KDP accepts it), verified', async () => {
   const r = await run({ text: [TITLE], unembedded: true });
   const [i] = byCheck(r, 'fonts');
-  assert.equal(i.severity, 'fail');
+  assert.equal(i.severity, 'warn');
+  assert.match(i.sourceNote, /went live/);
   assert.equal(i.page, 1);
   assert.match(i.message, /Helvetica/);
 });
@@ -47,10 +48,10 @@ await test('150 DPI cover image: Good to know, "may print slightly soft", cover 
   assert.equal(i.source, COVER_SRC);
 });
 
-await test('text under 7 pt on the cover: warn, best-effort, with cover-specific source', async () => {
+await test('text under 7 pt on the cover: Good to know, best-effort, with cover-specific source', async () => {
   const r = await run({ text: [TITLE, { str: 'tiny print', cx: 9.4, cy: 5, size: 5 }] });
   const [i] = byCheck(r, 'fontSize');
-  assert.equal(i.severity, 'warn');
+  assert.equal(i.severity, 'info');
   assert.equal(i.accuracy, 'best-effort');
   assert.equal(i.measured, '5 pt');
   assert.equal(i.source, specs._meta.sources.fontSize);

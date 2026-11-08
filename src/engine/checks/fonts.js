@@ -26,15 +26,16 @@ export function checkFonts(specs, pdf) {
       issues.push({
         id: `fonts-unembedded-${f.name}-p${page}`,
         checkId: 'fonts',
-        severity: 'fail',
+        severity: specs.fonts.unembeddedSeverity,
         page,
         measured: `${f.name} not embedded`,
         required: 'all fonts embedded',
-        message: `The font "${f.name}" is not embedded in the PDF. KDP requires every font to be embedded, otherwise the printer may swap in a different font.`,
+        message: `The font "${f.name}" is not embedded in the PDF. KDP usually accepts this; the printer may substitute the font.`,
         fix: 'Export the PDF again with fonts embedded. In LibreOffice: File → Export as PDF → General tab, tick "Archive (PDF/A, ISO 19005)", which embeds every font. In Word: File → Save As → PDF → Options, tick "PDF/A compliant". If a font still will not embed, its licence forbids it: switch to a different font.',
         accuracy: 'verified',
         source,
         fixId: 'embed-fonts',
+        sourceNote: specs.fonts.unembeddedNote,
       });
     }
   }

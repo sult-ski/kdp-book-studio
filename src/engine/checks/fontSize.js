@@ -30,7 +30,7 @@ export function checkPageFontSize(specs, page, render) {
     id: `fontSize-p${page.number}`,
     checkId: 'fontSize',
     groupKey: 'fontSize',
-    severity: 'warn',
+    severity: specs.fonts.smallTextSeverity,
     page: page.number,
     bbox: {
       x: Math.min(...xs) / d, y: Math.min(...ys) / d,

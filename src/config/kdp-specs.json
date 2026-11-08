@@ -88,6 +88,10 @@
     "mustEmbed": true,
     "preferFullOverSubset": true,
     "minSizePt": 7,
+    "unembeddedSeverity": "warn",
+    "unembeddedNote": "Ayomide's real uploads went live with unembedded fonts.",
+    "smallTextSeverity": "info",
+    "_severityNote": "Owner decision 2026-11-08: Must fix only for what KDP actually blocks. Unembedded fonts: KDP's guide says embed them, but real books with unembedded fonts were accepted, so Worth checking. Text under 7 pt: Good to know.",
     "source": "submission",
     "lastVerified": "2026-11-05"
   },
