@@ -85,7 +85,7 @@ export async function preflight(specs, bytes, settings, { pdfjs, docOptions = {}
   // Checks that couldn't run on this book; the report lists them under "Not checked yet".
   const notChecked = [];
   if (settings.deepContent) {
-    issues.push(...runContentRules(specs, texts));
+    issues.push(...runContentRules(specs, texts, settings.content));
     notChecked.push(...structureNotChecked(specs, texts));
   }
 

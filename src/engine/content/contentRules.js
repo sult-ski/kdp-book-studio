@@ -3,6 +3,7 @@
 // carrying the first matched snippet. No DOM.
 
 import { runStructureRules } from './contentStructure.js';
+import { contentContext, applyContextOverrides, runContextRules } from './contentContext.js';
 
 // Plain-English wording per rule. Spec values (phrases, severity, sources) stay in the config.
 const WORDING = {
@@ -75,7 +76,7 @@ const AI_DISCLOSURE = {
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Phrase → regex: case-insensitive, any run of spaces/line breaks between words, whole words at the ends. */
-const phraseRe = (p) => `(?<![\\w])${p.trim().split(/\s+/).map(escapeRe).join('\\s+')}(?![\\w])`;
+export const phraseRe = (p) => `(?<![\\w])${p.trim().split(/\s+/).map(escapeRe).join('\\s+')}(?![\\w])`;
 
 /** Compiles one combined, case-insensitive regex per rule; ^ and $ match at line starts and ends. */
 export function compileRules(content) {
@@ -108,7 +109,7 @@ function matchPage({ rule, re, reCase }, page, snippetChars) {
 }
 
 /** The match with some words either side, on one line. */
-function snippet(text, at, len, chars) {
+export function snippet(text, at, len, chars) {
   const start = Math.max(0, at - chars);
   const end = Math.min(text.length, at + len + chars);
   const s = text.slice(start, end).replace(/\s+/g, ' ').trim();
@@ -118,10 +119,12 @@ function snippet(text, at, len, chars) {
 /**
  * @param {object} specs kdp-specs.json
  * @param {Array<{ page:number, text:string, urls:string[] }>} pages
+ * @param {object} [settings] genre, audience, contexts, metadata (see contentContext.js)
  * @returns {Array<object>} issues
  */
-export function runContentRules(specs, pages) {
+export function runContentRules(specs, pages, settings) {
   const content = specs.content;
+  const ctx = contentContext(specs, settings);
   const compiled = compileRules(content);
   const issues = [];
   const hitRules = new Set();
@@ -165,14 +168,16 @@ export function runContentRules(specs, pages) {
   }
 
   kept.push(...runStructureRules(specs, pages));
+  kept.push(...runContextRules(specs, pages, ctx));
+  const final = applyContextOverrides(specs, kept, ctx);
 
   const textless = pages.filter((p) => !p.text.trim()).length;
-  kept.push({
+  final.push({
     id: 'content-scope', checkId: 'content.scope', severity: 'info', page: null, accuracy: 'verified',
     source: content.sources.contentGuidelines,
     measured: `${pages.length - textless} of ${pages.length} pages have readable text`, required: 'readable text',
     message: `The deep content check read the text of ${pages.length - textless} of ${pages.length} pages. Text inside images or converted to outlines can't be read, and we can't compare your book against the web for copied text.`,
     fix: 'Nothing to do. If your text is in images, check those pages yourself for the same problems.',
   });
-  return kept;
+  return final;
 }

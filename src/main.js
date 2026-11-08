@@ -43,6 +43,7 @@ $('settings').addEventListener('submit', async (e) => {
     toleranceIn: Number.isFinite(tol) && tol >= 0 ? tol : specs.app.sizeToleranceIn,
     // Deep content check: preview-only switch (?deep=1) until the D4 toggle.
     deepContent: new URLSearchParams(location.search).has('deep'),
+    content: previewContentSettings(new URLSearchParams(location.search)),
   };
 
   // Too big to upload to KDP, and too big to load safely in a browser tab.
@@ -103,4 +104,14 @@ function showProgress(doneCount, total) {
       <p class="hint">Everything happens on your device. Long books take a little while.</p>
     </div>`;
   $('result').scrollIntoView({ block: 'nearest' });
+}
+
+/** Preview-only (until the D4 form): ?deep=1&genre=erotica&audience=children&ctx=hymnal,aiThemed&title=…&author=…&isbn=…&publisher=… */
+function previewContentSettings(q) {
+  return {
+    genre: q.get('genre') ?? undefined,
+    audience: q.get('audience') ?? undefined,
+    contexts: (q.get('ctx') ?? '').split(',').filter(Boolean),
+    metadata: { title: q.get('title') ?? '', author: q.get('author') ?? '', isbn: q.get('isbn') ?? '', publisher: q.get('publisher') ?? '' },
+  };
 }

@@ -205,7 +205,8 @@
       "contentQuality": "https://kdp.amazon.com/en_US/help/topic/G200952510",
       "bonusContent": "https://kdp.amazon.com/en_US/help/topic/G202018960",
       "freelyAvailableReported": "https://www.kdpcommunity.com/s/question/0D5f400000FHsdMCAT/book-blocked-and-no-i-did-not-steal-content-from-the-web?language=en_US",
-      "amazonReviewsPolicy": "https://www.amazon.com/gp/help/customer/display.html?nodeId=GLHXEX85MENUE4XF"
+      "amazonReviewsPolicy": "https://www.amazon.com/gp/help/customer/display.html?nodeId=GLHXEX85MENUE4XF",
+      "metadataGuidelines": "https://kdp.amazon.com/en_US/help/topic/G201097560"
     },
     "rules": [
       {
@@ -435,6 +436,63 @@
       "severity": "info",
       "source": "contentGuidelines",
       "evidence": "official"
+    },
+    "context": {
+      "_note": "D3: what the author tells us about the book. Contexts change severities of rules that would be false alarms for that kind of book (\"off\" hides the rule). Research: 'Let users mark context (genre, PD-annotated edition, AI-themed book, typography book, hymnal or liturgy, children's audience), since these settings remove most false positives.'",
+      "genres": [
+        { "id": "general", "label": "Fiction or non-fiction (general)" },
+        { "id": "romance", "label": "Romance" },
+        { "id": "erotica", "label": "Erotica" },
+        { "id": "poetry", "label": "Poetry" },
+        { "id": "religion", "label": "Religion, hymns or liturgy" }
+      ],
+      "audiences": [
+        { "id": "adult", "label": "Adults or teens" },
+        { "id": "children", "label": "Children (picture books to middle grade)" }
+      ],
+      "contexts": {
+        "pdAnnotated": { "label": "Annotated, translated or illustrated public-domain edition", "overrides": { "gutenbergMention": "info" } },
+        "aiThemed": { "label": "Book about AI or chatbots", "overrides": { "aiLeftovers": "info" } },
+        "typography": { "label": "Book about typography or design", "overrides": { "placeholder": "warn" } },
+        "hymnal": { "label": "Hymnal, songbook or liturgy", "overrides": { "lyricsQuotes": "off", "duplicate": "off", "repeatedHeading": "off" } }
+      },
+      "_overridesNote": "Typography only lowers placeholder text to a warning: KDP's rule has no exception, so a specimen 'Lorem ipsum' can still be rejected. Gutenberg licence/header text stays Must fix in every context."
+    },
+    "lexicon": {
+      "_note": "Whole-word, case-insensitive. Short lists on purpose: these flag pages for a human to read, never auto-fail (research: 'partial detection, so route to human review').",
+      "sexual": ["had sex", "having sex", "sexual intercourse", "orgasm", "orgasms", "climaxed", "erection", "penis", "vagina", "clitoris", "cock", "pussy", "cum", "blowjob", "fucked her", "fucked him", "fucking her", "fucking him", "naked bodies", "her breasts", "his groin"],
+      "minor": ["teen", "teenage", "teenager", "underage", "under-age", "schoolgirl", "schoolboy", "preteen", "pre-teen", "jailbait"],
+      "minorPatterns": ["\\b(1[0-7]|thirteen|fourteen|fifteen|sixteen|seventeen)[- ]years?[- ]old\\b"],
+      "family": ["stepbrother", "stepsister", "stepdad", "stepmom", "stepmother", "stepfather", "stepdaughter", "stepson", "step-brother", "step-sister", "step-dad", "step-mom", "step-father", "step-mother", "his sister", "her brother", "my sister", "my brother", "his daughter", "her father", "my daughter", "my father", "her uncle", "his niece"],
+      "nonConsent": ["non-consent", "noncon", "dubcon", "dub-con", "against her will", "against his will", "raped", "rape"],
+      "bestiality": ["bestiality", "zoophilia"],
+      "profanity": ["fuck", "fucking", "fucked", "motherfucker", "shit", "bullshit", "cunt", "bitch", "asshole", "bastard", "dickhead"],
+      "violence": ["disembowelled", "disemboweled", "decapitated", "beheaded", "entrails", "brains splattered", "blood spurted", "slit her throat", "slit his throat", "gutted him", "gutted her", "torture", "tortured"]
+    },
+    "taboo": {
+      "severity": "warn", "accuracy": "best-effort", "evidence": "official", "source": "contentGuidelines",
+      "groups": ["minor", "family", "nonConsent", "bestiality"],
+      "_note": "Flags a page where an explicit sexual term appears together with a minor, family, non-consent or bestiality term. Checked in every genre."
+    },
+    "childrenExplicit": {
+      "severity": "warn", "accuracy": "best-effort", "evidence": "official", "source": "metadataGuidelines",
+      "groups": ["sexual", "profanity", "violence"],
+      "_note": "Only when the audience is Children. Sexually explicit content makes a book ineligible for Children's categories (Metadata Guidelines)."
+    },
+    "metadata": {
+      "source": "metadataGuidelines", "evidence": "official",
+      "searchPages": 12,
+      "_searchNote": "Title and author are looked for on the first pages (title page, copyright page), where KDP reviewers look.",
+      "titleMissing": { "severity": "warn", "accuracy": "best-effort" },
+      "authorMissing": { "severity": "warn", "accuracy": "best-effort" },
+      "isbnMismatch": { "severity": "warn", "accuracy": "verified" },
+      "isbnInvalid": { "severity": "warn", "accuracy": "verified" },
+      "publisherBrand": { "severity": "warn", "accuracy": "verified" },
+      "publisherLine": { "severity": "warn", "accuracy": "best-effort" },
+      "pdTitleLabel": { "severity": "warn", "accuracy": "verified", "source": "publicDomain", "labels": ["Annotated", "Translated", "Illustrated"] },
+      "brandPattern": "\\b(amazon|kindle|kdp|kindle direct publishing|createspace)\\b",
+      "publisherLinePattern": "^.{0,40}\\bpublished by\\b.{0,60}\\b(amazon|kindle|kdp|kindle direct publishing)\\b.*$",
+      "_severityNote": "Warn, not Must fix, until the owner decides: Metadata Guidelines say the ISBN 'must match' and the publisher field must not reference Amazon/Kindle/KDP, but we have no case of a paperback blocked for it."
     },
     "structure": {
       "_note": "Rules that look at where things are in the book rather than single phrases.",
