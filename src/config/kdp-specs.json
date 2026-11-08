@@ -485,14 +485,14 @@
       "_searchNote": "Title and author are looked for on the first pages (title page, copyright page), where KDP reviewers look.",
       "titleMissing": { "severity": "warn", "accuracy": "best-effort" },
       "authorMissing": { "severity": "warn", "accuracy": "best-effort" },
-      "isbnMismatch": { "severity": "warn", "accuracy": "verified" },
+      "isbnMismatch": { "severity": "fail", "accuracy": "verified", "evidence": "both", "sourceLabel": "KDP Metadata Guidelines + reported rejection", "_note": "Owner decision 2026-11-08: Must fix. Only runs when an ISBN was entered; digits compared, ISBN-10 and -13 treated as equal." },
       "isbnInvalid": { "severity": "warn", "accuracy": "verified" },
       "publisherBrand": { "severity": "warn", "accuracy": "verified" },
       "publisherLine": { "severity": "warn", "accuracy": "best-effort" },
       "pdTitleLabel": { "severity": "warn", "accuracy": "verified", "source": "publicDomain", "labels": ["Annotated", "Translated", "Illustrated"] },
       "brandPattern": "\\b(amazon|kindle|kdp|kindle direct publishing|createspace)\\b",
       "publisherLinePattern": "^.{0,40}\\bpublished by\\b.{0,60}\\b(amazon|kindle|kdp|kindle direct publishing)\\b.*$",
-      "_severityNote": "Warn, not Must fix, until the owner decides: Metadata Guidelines say the ISBN 'must match' and the publisher field must not reference Amazon/Kindle/KDP, but we have no case of a paperback blocked for it."
+      "_severityNote": "Owner decisions 2026-11-08: ISBN mismatch is Must fix; Amazon/Kindle/KDP in the publisher field or a Published by line stays Worth checking; title/author not found stays Worth checking."
     },
     "structure": {
       "_note": "Rules that look at where things are in the book rather than single phrases.",

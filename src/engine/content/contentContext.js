@@ -140,8 +140,8 @@ function metadataIssues(specs, pages, ctx) {
     const r = md[key];
     out.push({
       id: `content-${key}${fields.page ? `-p${fields.page}` : ''}`, checkId: `content.${key}`, groupKey: key, page: null,
-      severity: r.severity, accuracy: r.accuracy, evidence: md.evidence, source: r.source ? specs.content.sources[r.source] : src,
-      sourceLabel: 'Why KDP asks for this', ...fields,
+      severity: r.severity, accuracy: r.accuracy, evidence: r.evidence ?? md.evidence, source: r.source ? specs.content.sources[r.source] : src,
+      sourceLabel: r.sourceLabel ?? 'Why KDP asks for this', ...fields,
     });
   };
   const { title, author, isbn, publisher } = ctx.metadata;

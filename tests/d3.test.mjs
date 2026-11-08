@@ -100,6 +100,7 @@ await test('metadata: title/author found despite case and punctuation; missing o
   const bad = rules(front, { metadata: { title: 'The Loud Harbour', author: 'J. Doe' } });
   assert.equal(only(bad, 'content.titleMissing')[0].severity, 'warn');
   assert.equal(only(bad, 'content.authorMissing').length, 1);
+  assert.equal(only(bad, 'content.authorMissing')[0].severity, 'warn');
 });
 
 await test('metadata: ISBN in the book that differs from the entered one → warn; same ISBN in either form is fine', () => {
@@ -109,6 +110,12 @@ await test('metadata: ISBN in the book that differs from the entered one → war
   assert.equal(mm.length, 1);
   assert.equal(mm[0].page, 1);
   assert.match(mm[0].message, /must match/);
+  assert.equal(mm[0].severity, 'fail');
+  assert.equal(mm[0].evidence, 'both');
+  assert.equal(mm[0].sourceLabel, 'KDP Metadata Guidelines + reported rejection');
+  // No ISBN entered → never checked; spaces/hyphens ignored.
+  assert.deepEqual(only(rules(text), 'content.isbnMismatch'), []);
+  assert.deepEqual(only(rules(['ISBN 978 0 306 40615 7'], { metadata: { isbn: '9780306406157' } }), 'content.isbnMismatch'), []);
   assert.equal(only(rules(text, { metadata: { isbn: '978-1-2345' } }), 'content.isbnInvalid').length, 1);
 });
 
@@ -117,6 +124,8 @@ await test('metadata: Amazon/KDP in the publisher field or the "Published by" li
   assert.equal(only(rules([PROSE], { metadata: { publisher: 'Harbour Press' } }), 'content.publisherBrand').length, 0);
   const line = only(rules(['Copyright 2026\nPublished by Kindle Direct Publishing']), 'content.publisherLine');
   assert.equal(line[0].page, 1);
+  assert.equal(line[0].severity, 'warn');
+  assert.equal(only(rules([PROSE], { metadata: { publisher: 'Amazon KDP' } }), 'content.publisherBrand')[0].severity, 'warn');
   assert.equal(only(rules(['Independently published\nAvailable on Amazon']), 'content.publisherLine').length, 0);
 });
 
