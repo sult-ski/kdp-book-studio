@@ -13,13 +13,13 @@ Stack: Vite + vanilla JS (JSDoc types), pdf-lib + pdfjs-dist, Web Worker, vite-p
 - [x] **M8 — Ship.** PWA (vite-plugin-pwa), privacy note, Vercel deploy (Vercel CLI, project kdp-book-studio; ask before the first production deploy), test on one real KDP-approved book (owner confirmed "Ready for KDP" on the live site, Nov 2026).
 - [x] **M9 — UI redesign.** Premium, simple SaaS look; no engine changes. Self-hosted Inter (@fontsource), neutral palette + one accent, subtle static iridescent background. Hero with value statement, 3 steps, trust badges. Form in one card with custom selects, file picker and bleed toggle (44px targets). Results summary-first: verdict card, one expandable row per issue grouped Must fix / Worth checking / Good to know (collapsed), collapsed "Check details". Short footer. Verify at desktop and 360px.
 
-## Phase 2: Cover checker + calculator (owner-verified specs, Nov 2026)
+## Phase 2: Cover checker + calculator (owner-verified specs, Nov 2026) — ✅ DONE (TATU real-cover test passed, Nov 2026)
 Tabs alongside the interior checker, same design system, 100% client-side. Specs in `kdp-specs.json` → `cover`.
 - [x] **C1 — Tabs + Calculator.** Spine width, full cover size, to-scale diagram, downloadable PDF template with guides (trim, bleed, safe area, spine, barcode box).
 - [x] **C2 — Cover size + spine check.** Cover tab: upload cover PDF, compare its size to the calculated size (tolerance), spine text only from 79 pages.
 - [x] **C3 — Safe area, spine text and fold lines.** Live text outside the safe area (fail), spine text crossing a fold line (warn), spine text within 0.0625" of the spine edge (warn), multi-page cover PDF (fail). Outlined text can't be told from cover art: listed under "Not checked yet".
 - [x] **C4 — Fonts, DPI, barcode.** Reuse the interior engine for fonts and image DPI; text under 7 pt; barcode area check (best-effort info).
-- [x] **C5 — Cover report UI.** Zone overlay thumbnail (bleed, folds, safe areas, barcode box, problem outlines, Show guides toggle); guides hidden when the cover size fails. Real-cover test: owner, pending.
+- [x] **C5 — Cover report UI.** Zone overlay thumbnail (bleed, folds, safe areas, barcode box, problem outlines, Show guides toggle); guides hidden when the cover size fails. Real-cover test passed (TATU, 56 pages, 5.5x8.5 white).
 
 ## Phase 2.5: Deep content check (start only after C5 is done)
 Optional text scan of the interior, 100% client-side, no APIs. Based on `docs/research/deep-content-research.pdf` (Top 15 checks). Rules live in a new `content` section of `kdp-specs.json`: phrase/regex lists, `evidence: official | reported | both`, source URL (from the research PDF's links) and lastVerified. Issues show the matched snippet and page number. Exact-pattern rules (Gutenberg markers, lorem ipsum, store URLs) are `verified`; heuristic rules are `best-effort`. Text inside images or converted to outlines can't be read; say so in the report.
