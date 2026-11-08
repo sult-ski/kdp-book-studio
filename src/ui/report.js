@@ -13,7 +13,31 @@ const GROUP_HINT = {
 };
 const THUMBS_PER_ROW = 3;
 // KDP rules we can't check reliably. Listed so authors know to check these themselves.
-const NOT_SUPPORTED = ['Crop or trim marks drawn on the page', 'Resolution of images used as patterns or textures', 'Invisible objects', 'Placeholder text', 'Metadata'];
+const NOT_SUPPORTED = ['Crop or trim marks drawn on the page', 'Resolution of images used as patterns or textures', 'Invisible objects', 'Placeholder text', 'Metadata', "Copyright or plagiarism: we can't compare your text against the web"];
+/** The deep content check reads placeholder text, and metadata when the author typed some in. */
+function notSupported(settings) {
+  if (!settings.deepContent) return NOT_SUPPORTED;
+  const md = Object.values(settings.content?.metadata ?? {}).some(Boolean);
+  return NOT_SUPPORTED.filter((t) => t !== 'Placeholder text' && !(md && t === 'Metadata'));
+}
+// Short row titles for the deep content check. The full explanation stays in the engine's message.
+const CONTENT_TITLES = {
+  'content.gutenberg': 'Project Gutenberg text', 'content.gutenbergMention': 'Mentions Project Gutenberg',
+  'content.placeholder': 'Placeholder text', 'content.storeLinks': 'Link to another book store',
+  'content.storeMentions': 'Mentions another book store', 'content.aiLeftovers': 'Possible leftover AI chatbot text',
+  'content.aiDisclosure': 'Reminder: disclose AI-generated content', 'content.newsletterLinks': 'Newsletter or sign-up link',
+  'content.freelyAvailable': 'Text that may be free elsewhere', 'content.companionGuide': 'Looks like a summary or companion guide',
+  'content.redirect': 'Sends readers elsewhere for the content', 'content.incentivisedReviews': 'Reward or star rating asked for reviews',
+  'content.lyricsQuotes': 'Song lyrics credited', 'content.bonusFront': 'Bonus content before Chapter 1',
+  'content.bonusShare': 'A lot of bonus content', 'content.duplicate': 'Repeated passage',
+  'content.repeatedHeading': 'Chapter heading used twice', 'content.taboo': 'Explicit scene with a restricted theme',
+  'content.childrenExplicit': "Adult words in a children's book", 'content.genreAudience': "Erotica set for children",
+  'content.titleMissing': 'Title not found in the book', 'content.authorMissing': 'Author name not found in the book',
+  'content.isbnMismatch': "ISBN in the book doesn't match", 'content.isbnInvalid': "ISBN you entered isn't valid",
+  'content.publisherBrand': 'Amazon or KDP named as publisher', 'content.publisherLine': 'Amazon or KDP named as publisher in the book',
+  'content.pdTitleLabel': 'Title needs (Annotated), (Translated) or (Illustrated)', 'content.scope': 'What the deep content check read',
+};
+const SNIPPETS_SHOWN = 8;
 
 const icon = (name, cls = 'icon') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 
@@ -132,11 +156,24 @@ function rowHtml(g, { issues, pageInfo, thumbs, specs, onePageLabel }) {
           <p>${esc(g.fix)}</p>
         </div>
         ${g.pages.length > 1 && list.length > 14 ? `<p class="issue__pages"><strong>Pages:</strong> ${list}</p>` : ''}
+        ${snippetsHtml(members)}
         ${proofsHtml(g, members, pageInfo, thumbs)}
-        <p class="issue__links"><a href="${esc(g.source)}" target="_blank" rel="noopener">${esc(g.sourceLabel ?? 'Why KDP asks for this')}</a></p>
+        <p class="issue__links"><a href="${esc(g.source)}" target="_blank" rel="noopener">${esc(g.sourceLabel ?? 'Why KDP asks for this')}</a>${g.reportedSource ? ` · <a href="${esc(g.reportedSource.url)}" target="_blank" rel="noopener">Reported case</a>` : ''}</p>
         ${accuracy}
       </div>
     </details>`;
+}
+
+/** Deep content check: the words found, one line per page. */
+function snippetsHtml(members) {
+  const rows = members.filter((i) => i.snippet);
+  if (!rows.length) return '';
+  const shown = rows.slice(0, SNIPPETS_SHOWN);
+  const more = rows.length - shown.length;
+  return `
+    <ul class="snips" aria-label="What we found">${shown.map((i) => `
+      <li><span class="snips__page">${i.page != null ? `Page ${i.page}` : 'Book details'}</span><q>${esc(i.snippet)}</q></li>`).join('')}
+    </ul>${more ? `<p class="snips__more">and ${more} more ${more === 1 ? 'page' : 'pages'}</p>` : ''}`;
 }
 
 /** Up to three page previews for this problem, worst page first, with only this problem marked. */
@@ -207,6 +244,7 @@ const FILE_TITLES = {
 /** A short row title (about 8 words). The full explanation is shown only when the row is opened. */
 function rowTitle(g, count, specs) {
   const parts = (g.groupKey ?? '').split('|'); // margins|edge|kind, bleed|kind|edge, images|low|verylow
+  if (CONTENT_TITLES[g.checkId]) return CONTENT_TITLES[g.checkId];
   switch (g.checkId) {
     case 'pageSize': return g.severity === 'info' ? 'Page size within tolerance' : `Wrong page size (${g.measured})`;
     case 'spread': return 'Two pages side by side (spread)';
@@ -252,6 +290,8 @@ function rowTitle(g, count, specs) {
 /** The full explanation. Margin messages open with a bare label ("Text inside the gutter zone.")
  * that only repeats the row title, so it is left out there. */
 function bodyText(g) {
+  // Content rows list every snippet below, so the first page's "Found: …" is dropped here.
+  if (g.checkId.startsWith('content.') && g.snippet) return g.message.replace(/\s*Found: "[\s\S]*"$/, '').replace(/^This page/, g.pages.length > 1 ? 'These pages' : 'This page').replace(/^(These pages) has/, '$1 have');
   return g.checkId === 'margins' ? g.message.replace(/^[^.]*\.\s+/, '') : g.message;
 }
 
@@ -283,6 +323,7 @@ function detailsHtml({ specs, summary, file, settings, notChecked = [] }) {
           <dt>File</dt><dd>${esc(file.name)}</dd>
           <dt>Pages</dt><dd>${summary.pageCount} pages, ${(file.size / 1e6).toFixed(1)} MB</dd>
           <dt>Checked as</dt><dd>${tw}" x ${th}" trim, ${esc(ink.toLowerCase())}, ${settings.bleed ? 'with bleed' : 'no bleed'}</dd>
+          ${deepFact(specs, settings)}
           <dt>Page size needed</dt><dd>${summary.expected.width}" x ${summary.expected.height}"</dd>
           <dt>Page count allowed</dt><dd>${range}</dd>
         </dl>
@@ -290,9 +331,18 @@ function detailsHtml({ specs, summary, file, settings, notChecked = [] }) {
           <thead><tr><th scope="col">Size</th><th scope="col">Pages</th></tr></thead><tbody>${rows}</tbody></table>
         <h3>Check these yourself</h3>
         <p>KDP asks for files without these, but they can't be detected reliably:</p>
-        <ul class="selfcheck">${NOT_SUPPORTED.map((t) => `<li>${t}</li>`).join('')}</ul>${notCheckedHtml}
+        <ul class="selfcheck">${notSupported(settings).map((t) => `<li>${t}</li>`).join('')}</ul>${notCheckedHtml}
       </div>
     </details>`;
+}
+
+function deepFact(specs, settings) {
+  if (!settings.deepContent) return '<dt>Deep content check</dt><dd>Off</dd>';
+  const c = specs.content.context;
+  const cs = settings.content ?? {};
+  const parts = [c.genres.find((g) => g.id === cs.genre)?.label, c.audiences.find((a) => a.id === cs.audience)?.label,
+    ...(cs.contexts ?? []).map((id) => c.contexts[id]?.label)].filter(Boolean);
+  return `<dt>Deep content check</dt><dd>On${parts.length ? `: ${esc(parts.join(', '))}` : ''}</dd>`;
 }
 
 function saveReport({ specs, summary, issues, file, settings, notChecked = [] }, counts) {

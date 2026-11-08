@@ -441,7 +441,7 @@
     "context": {
       "_note": "D3: what the author tells us about the book. Contexts change severities of rules that would be false alarms for that kind of book (\"off\" hides the rule). Research: 'Let users mark context (genre, PD-annotated edition, AI-themed book, typography book, hymnal or liturgy, children's audience), since these settings remove most false positives.'",
       "genres": [
-        { "id": "general", "label": "Fiction or non-fiction (general)" },
+        { "id": "general", "label": "General fiction or non-fiction" },
         { "id": "romance", "label": "Romance" },
         { "id": "erotica", "label": "Erotica" },
         { "id": "poetry", "label": "Poetry" },
@@ -449,7 +449,7 @@
       ],
       "audiences": [
         { "id": "adult", "label": "Adults or teens" },
-        { "id": "children", "label": "Children (picture books to middle grade)" }
+        { "id": "children", "label": "Children (up to 12)" }
       ],
       "contexts": {
         "pdAnnotated": { "label": "Annotated, translated or illustrated public-domain edition", "overrides": { "gutenbergMention": "info" } },

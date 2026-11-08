@@ -24,6 +24,21 @@ $('trim').innerHTML = listTrims(specs)
 $('inkPaper').innerHTML = listInkPaper(specs)
   .map((o) => `<option value="${o.key}">${o.label}</option>`).join('');
 $('tolerance').value = specs.app.sizeToleranceIn;
+
+// Deep content check options, from the config.
+const ctxCfg = specs.content.context;
+$('genre').innerHTML = ctxCfg.genres.map((g) => `<option value="${g.id}">${esc(g.label)}</option>`).join('');
+$('audience').innerHTML = ctxCfg.audiences.map((a) => `<option value="${a.id}">${esc(a.label)}</option>`).join('');
+$('contexts').innerHTML = Object.entries(ctxCfg.contexts).map(([id, c]) =>
+  `<label class="check"><input type="checkbox" value="${id}" /><span>${esc(c.label)}</span></label>`).join('');
+const syncDeep = () => {
+  $('deep-options').hidden = !$('deep').checked;
+  $('deep').setAttribute('aria-expanded', String($('deep').checked));
+};
+$('deep').addEventListener('change', syncDeep);
+// ?deep=1 (the old preview switch) still opens the option, so shared links keep working.
+if (new URLSearchParams(location.search).has('deep')) $('deep').checked = true;
+syncDeep();
 // When the KDP rules in the config were last checked against Amazon's pages (the latest date of any rule),
 // e.g. "on 6 November 2026".
 $('specs-checked').textContent = `on ${new Date(`${latestVerified(specs)}T12:00:00`)
@@ -41,9 +56,8 @@ $('settings').addEventListener('submit', async (e) => {
     inkPaper: $('inkPaper').value,
     bleed: document.querySelector('input[name=bleed]:checked').value === 'yes',
     toleranceIn: Number.isFinite(tol) && tol >= 0 ? tol : specs.app.sizeToleranceIn,
-    // Deep content check: preview-only switch (?deep=1) until the D4 toggle.
-    deepContent: new URLSearchParams(location.search).has('deep'),
-    content: previewContentSettings(new URLSearchParams(location.search)),
+    deepContent: $('deep').checked,
+    content: $('deep').checked ? readContentSettings() : undefined,
   };
 
   // Too big to upload to KDP, and too big to load safely in a browser tab.
@@ -106,12 +120,13 @@ function showProgress(doneCount, total) {
   $('result').scrollIntoView({ block: 'nearest' });
 }
 
-/** Preview-only (until the D4 form): ?deep=1&genre=erotica&audience=children&ctx=hymnal,aiThemed&title=…&author=…&isbn=…&publisher=… */
-function previewContentSettings(q) {
+/** The deep content check's settings, read from the form. The engine ignores unknown ids. */
+function readContentSettings() {
+  const v = (id) => $(id).value.trim();
   return {
-    genre: q.get('genre') ?? undefined,
-    audience: q.get('audience') ?? undefined,
-    contexts: (q.get('ctx') ?? '').split(',').filter(Boolean),
-    metadata: { title: q.get('title') ?? '', author: q.get('author') ?? '', isbn: q.get('isbn') ?? '', publisher: q.get('publisher') ?? '' },
+    genre: $('genre').value,
+    audience: $('audience').value,
+    contexts: [...document.querySelectorAll('#contexts input:checked')].map((el) => el.value),
+    metadata: { title: v('md-title'), author: v('md-author'), isbn: v('md-isbn'), publisher: v('md-publisher') },
   };
 }

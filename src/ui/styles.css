@@ -233,6 +233,39 @@ select:focus-visible, input[type=number]:focus-visible {
 .advanced[open] summary .icon { transform: none; }
 .advanced .field { margin-top: .25rem; }
 
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Deep content check: an opt-in panel inside the form */
+.deep { padding: 1rem; background: var(--subtle); border: 1px solid var(--line); border-radius: var(--radius); gap: .35rem; }
+.deep__toggle { display: flex; align-items: center; gap: .65rem; min-height: 44px; cursor: pointer; font-size: 1rem; }
+.deep__toggle input { flex: none; width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--accent); }
+.deep__tag {
+  margin-left: .35rem; padding: .1rem .5rem; font-size: .75rem; font-weight: 600; color: var(--accent);
+  background: var(--accent-wash); border-radius: 999px; vertical-align: .1em;
+}
+.deep > .hint { margin: 0; }
+.deep__options { display: grid; gap: 1.25rem; margin-top: 1rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
+.deep__options[hidden] { display: none; }
+.deep__lead { margin: 0 0 .35rem; }
+.field__opt { font-weight: 400; color: var(--muted); }
+.field__label--sm { font-size: .875rem; }
+.checks { display: grid; gap: .15rem; }
+.check { display: flex; align-items: flex-start; gap: .6rem; min-height: 44px; padding: .55rem 0; cursor: pointer; font-size: .9375rem; line-height: 1.4; }
+.check input { flex: none; width: 1.15rem; height: 1.15rem; margin: .1rem 0 0; accent-color: var(--accent); }
+input[type=text] {
+  font: inherit; width: 100%; height: var(--control-h); padding: 0 .9rem; color: var(--text); background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: var(--radius); transition: border-color .15s, box-shadow .15s;
+}
+input[type=text]:hover { border-color: #a9afbe; }
+input[type=text]:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(90 63 200 / 25%); }
+
+/* Deep content check: one line per page with the words we found */
+.snips { display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.snips li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .65rem; align-items: baseline; padding: .55rem .75rem; background: var(--subtle); border-radius: 8px; font-size: .875rem; }
+.snips__page { font-weight: 650; white-space: nowrap; }
+.snips q { overflow-wrap: anywhere; color: var(--text); }
+.snips__more { margin: .1rem 0 0; font-size: .8125rem; color: var(--muted); }
+
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   font: inherit; font-weight: 650; min-height: var(--control-h); padding: 0 1.25rem;

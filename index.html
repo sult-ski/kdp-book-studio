@@ -87,6 +87,42 @@
         <p class="hint">Choose Bleed only if pictures or colour run right off the edge of the page.</p>
       </fieldset>
 
+      <fieldset class="field deep">
+        <legend class="sr-only">Deep content check</legend>
+        <label class="deep__toggle">
+          <input type="checkbox" id="deep" aria-describedby="deep-hint" aria-controls="deep-options" aria-expanded="false" />
+          <span><strong>Deep content check</strong> <span class="deep__tag">Optional</span></span>
+        </label>
+        <p class="hint" id="deep-hint">Also reads the words in your book for things KDP blocks or questions, like placeholder text, Project Gutenberg text or links to other stores. Still on your device. Takes a little longer.</p>
+        <div class="deep__options" id="deep-options" hidden>
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="genre">Genre</label>
+              <select id="genre"></select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="audience">Who it's for</label>
+              <select id="audience"></select>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend class="field__label">This book is a… <span class="field__opt">(tick any that apply)</span></legend>
+            <div class="checks" id="contexts"></div>
+            <p class="hint">These stop false alarms. For example, a hymnal repeats verses on purpose.</p>
+          </fieldset>
+          <fieldset class="field">
+            <legend class="field__label">Book details from KDP <span class="field__opt">(optional)</span></legend>
+            <p class="hint deep__lead">Type them exactly as in your KDP Bookshelf. We check they match what's printed in the book.</p>
+            <div class="field-row">
+              <div class="field"><label class="field__label field__label--sm" for="md-title">Title</label><input type="text" id="md-title" autocomplete="off" /></div>
+              <div class="field"><label class="field__label field__label--sm" for="md-author">Author</label><input type="text" id="md-author" autocomplete="off" /></div>
+              <div class="field"><label class="field__label field__label--sm" for="md-isbn">ISBN (paperback)</label><input type="text" id="md-isbn" inputmode="numeric" autocomplete="off" placeholder="978-…" /></div>
+              <div class="field"><label class="field__label field__label--sm" for="md-publisher">Publisher or imprint</label><input type="text" id="md-publisher" autocomplete="off" /></div>
+            </div>
+          </fieldset>
+        </div>
+      </fieldset>
+
       <details class="advanced">
         <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg> Advanced</summary>
         <div class="field">
