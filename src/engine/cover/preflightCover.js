@@ -12,6 +12,22 @@ import { checkFonts } from '../checks/fonts.js';
 import { checkPageImages } from '../checks/imageDpi.js';
 import { checkPageFontSize } from '../checks/fontSize.js';
 
+// Cover-specific fix wording: covers are usually made in Canva, Photoshop or Affinity, not a word processor.
+const CANVA_EXPORT = 'download with Share → Download → "PDF Print" and tick "Flatten PDF"';
+const PRO_EXPORT = 'In Photoshop or Affinity: export as PDF/X-1a with all fonts embedded and images at 300 DPI.';
+const COVER_FIX = {
+  images: (fix) => fix.replace(/ If the original picture[\s\S]*$/, '') +
+    ` In Canva: upload images that are at least 300 DPI at their printed size, use them at full resolution without stretching them bigger, then ${CANVA_EXPORT}. ${PRO_EXPORT}`,
+  fontSize: () => `Make it at least 7 pt. In Canva: select the text, raise the size in the toolbar, then ${CANVA_EXPORT}. ${PRO_EXPORT}`,
+  'fonts-unreadable': () => `Export the cover again. In Canva: ${CANVA_EXPORT}. ${PRO_EXPORT}`,
+  'fonts-subset': () => 'Nothing to do: subset fonts are fine on a cover.',
+  fonts: () => `In Canva: ${CANVA_EXPORT} (flattening turns text into shapes, so no font can go missing). ${PRO_EXPORT} If a font still will not embed, its licence forbids it: switch to a different font.`,
+};
+const withCoverFix = (issues) => issues.map((i) => {
+  const f = COVER_FIX[i.id] ?? COVER_FIX[i.checkId];
+  return f ? { ...i, fix: f(i.fix) } : i;
+});
+
 /** The interior checks read specs.fonts / specs.images; on a cover they use the cover's values and sources. */
 const forCover = (specs) => ({
   ...specs,
@@ -37,13 +53,13 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
   const issues = [
     ...checkCoverPages(specs, pdf.pageCount),
     ...checkCoverSize(specs, first, L, settings),
-    ...checkFonts(cs, { ...pdf, fonts: coverFonts }),
+    ...withCoverFix(checkFonts(cs, { ...pdf, fonts: coverFonts })),
   ];
 
   const doc = await openWithPdfjs(pdfjs, bytes, docOptions);
   try {
     const { images, render } = await inspectPage(pdfjs, doc, 1, { dpi: specs.app.renderDpi, render: true });
-    issues.push(...checkPageImages(cs, first, images), ...checkPageFontSize(cs, first, render));
+    issues.push(...withCoverFix([...checkPageImages(cs, first, images), ...checkPageFontSize(cs, first, render)]));
     const textBoxes = render.textItems.map(({ str, rect: [x0, y0, x1, y1] }) => ({
       str, x: x0 / render.dpi, y: y0 / render.dpi, width: (x1 - x0) / render.dpi, height: (y1 - y0) / render.dpi,
     }));

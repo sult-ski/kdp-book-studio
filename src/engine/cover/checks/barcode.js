@@ -1,4 +1,4 @@
-// Barcode area (best-effort, info): KDP prints the ISBN barcode on the back cover, bottom right, on a white box
+// Barcode area (best-effort): blocked = warn, only the minimum box clear = info. KDP prints the ISBN barcode on the back cover, bottom right, on a white box
 // at least 0.25" from the spine and the trim. We look at the rendered cover: is the suggested 2" x 1.2" box clear
 // and white? If not, is at least the minimum 1.4" x 0.8" box clear? Pixels can't tell "your own barcode" from
 // artwork, so this is advice only.
@@ -42,7 +42,7 @@ export function checkBarcodeArea(specs, render, L) {
     }];
   }
   return [{
-    ...base, id: 'cover-barcode-blocked', bbox: suggested,
+    ...base, id: 'cover-barcode-blocked', severity: 'warn', bbox: suggested,
     measured: 'artwork or a coloured background in the barcode area',
     message: `KDP prints the barcode ${where}, on a ${bc.background} box at least ${size(bc.minIn.width, bc.minIn.height)} (${size(bc.suggestedIn.width, bc.suggestedIn.height)} suggested). That area of your cover isn't clear and white, so the barcode box will cover part of your design. ${own}`,
     fix: `Move text and important artwork out of that corner and give it a white background, at least ${size(bc.minIn.width, bc.minIn.height)}. Use the template from the Cover calculator tab to see the exact box.`,

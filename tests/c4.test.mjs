@@ -55,11 +55,11 @@ await test('text under 7 pt on the cover: warn, best-effort, with cover-specific
   assert.equal(i.source, specs._meta.sources.fontSize);
 });
 
-await test('art over the whole barcode area: info, best-effort, says ignore if own barcode', async () => {
+await test('art over the whole barcode area: warn, best-effort, says ignore if own barcode', async () => {
   const r = await run({ fills: [{ x: 0, y: 0, w: 6.2, h: 9.25 }] });
   const [i] = byCheck(r, 'coverBarcode');
   assert.equal(i.id, 'cover-barcode-blocked');
-  assert.equal(i.severity, 'info');
+  assert.equal(i.severity, 'warn');
   assert.equal(i.accuracy, 'best-effort');
   assert.match(i.message, /1\.4" x 0\.8"/);
   assert.match(i.message, /own barcode/);
@@ -82,6 +82,17 @@ await test('art just outside the barcode box (0.25" clearance strip): no barcode
 await test('wrong-size cover: barcode check skipped (size issue explains)', async () => {
   const r = await preflightCover(specs, await makeCover({ w: 12, h: 9, fills: [{ x: 0, y: 0, w: 12, h: 9 }] }), S, env);
   assert.deepEqual(byCheck(r, 'coverBarcode'), []);
+});
+
+await test('cover fixes speak Canva first, then Photoshop/Affinity, never LibreOffice', async () => {
+  const r = await run({ unembedded: true, text: [TITLE, { str: 'tiny', cx: 9.4, cy: 5, size: 5 }],
+    images: [{ pxW: 870, pxH: 1298, x: 6.6, y: 0.3, w: 5.8, h: 8.65 }] });
+  for (const c of ['fonts', 'images', 'fontSize']) {
+    const [i] = byCheck(r, c);
+    assert.match(i.fix, /Canva[\s\S]*PDF Print[\s\S]*Flatten PDF[\s\S]*Photoshop or Affinity: export as PDF\/X-1a/, c);
+    assert.doesNotMatch(i.fix, /LibreOffice|Word/, c);
+  }
+  assert.match(byCheck(r, 'images')[0].fix, /^Use a higher-resolution version \(at least 1741 x 2595 pixels/);
 });
 
 console.log(`\nC4: ${passed} tests passed`);
