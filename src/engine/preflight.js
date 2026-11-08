@@ -13,6 +13,8 @@ import { hasInk } from './ink.js';
 import { checkPageMargins, pageMatchesExpectedSize } from './checks/margins.js';
 import { sourceUrl } from './specs.js';
 import { pageLayout } from './layout.js';
+import { extractPageText } from './content/extractText.js';
+import { runContentRules } from './content/contentRules.js';
 
 /**
  * @param {object} specs
@@ -50,6 +52,7 @@ export async function preflight(specs, bytes, settings, { pdfjs, docOptions = {}
 
   const failedPages = [];
   const blank = pdf.pages.map(() => null); // true/false once a page is rendered
+  const texts = []; // deep content check (settings.deepContent): { page, text, urls } per page
   try {
     for (const page of pdf.pages) {
       onProgress({ done: page.number - 1, total: pdf.pageCount });
@@ -63,6 +66,7 @@ export async function preflight(specs, bytes, settings, { pdfjs, docOptions = {}
         ];
         issues.push(...pageIssues);
         blank[page.number - 1] = !hasInk(render, specs.app.inkThreshold);
+        if (settings.deepContent) texts.push(await extractPageText(doc, page.number));
         if (onPage) {
           const all = issues.filter((i) => i.page === page.number); // structural + this page's checks
           if (needsPageCard(all)) await onPage({ page, render, issues: all });
@@ -77,6 +81,7 @@ export async function preflight(specs, bytes, settings, { pdfjs, docOptions = {}
   }
   onProgress({ done: pdf.pageCount, total: pdf.pageCount });
   issues.push(...checkBlankPages(specs, blank));
+  if (settings.deepContent) issues.push(...runContentRules(specs, texts));
 
   if (failedPages.length) {
     issues.push(marginsUnchecked(source,

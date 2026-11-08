@@ -190,5 +190,160 @@
       "source": "cover",
       "lastVerified": "2026-11-06"
     }
+  },
+  "content": {
+    "_note": "Deep content check (Phase 2.5). Phrase lists from docs/research/deep-content-research.pdf. Some table cells in that PDF are clipped (also in its embedded text), so lists use the visible text plus terms the research names elsewhere (Top 15 list). Phrases match case-insensitively with flexible spaces; patterns are JavaScript regex sources (flags giu). evidence: official = KDP Help/Terms text, reported = author/news account, both = official rule + reported case.",
+    "lastVerified": "2026-11-08",
+    "snippetChars": 50,
+    "sources": {
+      "contentGuidelines": "https://kdp.amazon.com/en_US/help/topic/G200672390",
+      "publicDomain": "https://kdp.amazon.com/en_US/help/topic/G200743940",
+      "printGuidelines2018": "https://m.media-amazon.com/images/G/01/kindle-publication/KDP_Print_Publishing_Guidelines_01_24_2018._CB1516837113_.pdf",
+      "gutenbergLicense": "https://www.gutenberg.org/policy/license.html",
+      "aiReported": "https://undetectable.ai/blog/books-written-by-ai-on-amazon/",
+      "storeLinksReported": "https://www.ebookpbook.com/2026/05/13/ebook-hyperlinks-kindle-broken/"
+    },
+    "rules": [
+      {
+        "id": "gutenberg",
+        "label": "Project Gutenberg text",
+        "severity": "fail",
+        "accuracy": "verified",
+        "evidence": "both",
+        "source": "publicDomain",
+        "patterns": [
+          "\\*{3}\\s*START OF (THE|THIS) PROJECT GUTENBERG EBOOK",
+          "\\*{3}\\s*END OF (THE|THIS) PROJECT GUTENBERG"
+        ],
+        "phrases": [
+          "THE FULL PROJECT GUTENBERG LICENSE",
+          "Project Gutenberg Literary Archive Foundation",
+          "This eBook is for the use of anyone anywhere"
+        ]
+      },
+      {
+        "id": "gutenbergMention",
+        "label": "Possible Project Gutenberg source",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "reported",
+        "source": "publicDomain",
+        "patterns": [
+          "gutenberg\\.org",
+          "\\bProject Gutenberg\\b"
+        ],
+        "phrases": [
+          "Distributed Proofreaders",
+          "Transcriber's Note"
+        ],
+        "skipIfRule": "gutenberg"
+      },
+      {
+        "id": "placeholder",
+        "label": "Placeholder text",
+        "severity": "fail",
+        "accuracy": "verified",
+        "evidence": "official",
+        "source": "printGuidelines2018",
+        "patterns": [
+          "lorem ipsum",
+          "dolor sit amet",
+          "consectetur adipiscing",
+          "\\[(insert|your|author|add|enter)[^\\]]{0,60}\\]",
+          "\\bChapter (\\?\\?|#{1,3}|_{2,})(?![\\w#_?])"
+        ],
+        "caseSensitivePatterns": [
+          "\\bTODO\\b"
+        ],
+        "phrases": [
+          "Author Name Here",
+          "Book Title Here",
+          "Click here to add text",
+          "Type your text here",
+          "Insert chapter here"
+        ],
+        "_note": "\"Chapter X\"/\"Chapter XX\" from the research is left out: X and XX are also Roman numerals 10 and 20. TODO matches upper case only."
+      },
+      {
+        "id": "storeLinks",
+        "label": "Link to another ebook store",
+        "severity": "fail",
+        "accuracy": "verified",
+        "evidence": "official",
+        "source": "contentGuidelines",
+        "target": "urls",
+        "patterns": [
+          "books\\.apple\\.com",
+          "itunes\\.apple\\.com",
+          "(?<![\\w-])kobo\\.com",
+          "barnesandnoble\\.com",
+          "(?<![\\w-])nook\\.com",
+          "smashwords\\.com",
+          "draft2digital\\.com",
+          "books2read\\.com",
+          "play\\.google\\.com/store/books",
+          "books\\.google\\.com"
+        ]
+      },
+      {
+        "id": "storeMentions",
+        "label": "Mentions another ebook store",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentGuidelines",
+        "patterns": [
+          "available (on|at|from) .{0,40}(Apple Books|iBooks|Kobo|Barnes|Nook|Google Play|Smashwords|all (major )?retailers)"
+        ]
+      },
+      {
+        "id": "aiLeftovers",
+        "label": "Leftover AI chatbot text",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "reported",
+        "source": "aiReported",
+        "patterns": [
+          "Thought for \\d+ seconds",
+          "to align more with .{1,40}'s style"
+        ],
+        "phrases": [
+          "As an AI language model",
+          "As of my last knowledge update",
+          "I've rewritten the passage",
+          "Here's an advanced version of your passage",
+          "Let me know if you'd like",
+          "Would you like me to",
+          "Regenerate response"
+        ],
+        "followUp": "aiDisclosure"
+      },
+      {
+        "id": "newsletterLinks",
+        "label": "Newsletter or sign-up link",
+        "severity": "info",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentGuidelines",
+        "target": "urls",
+        "patterns": [
+          "mailchimp",
+          "list-manage\\.com",
+          "convertkit",
+          "(?<![\\w-])kit\\.com",
+          "mailerlite",
+          "bookfunnel",
+          "substack\\.com/subscribe",
+          "forms\\.gle",
+          "docs\\.google\\.com/forms",
+          "(?<![\\w-])bit\\.ly/"
+        ]
+      }
+    ],
+    "aiDisclosure": {
+      "severity": "info",
+      "source": "contentGuidelines",
+      "evidence": "official"
+    }
   }
 }

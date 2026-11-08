@@ -185,6 +185,28 @@ export function addAnnotation(doc, page, subtype) {
   page.node.addAnnot(ctx.register(ctx.obj({ Type: 'Annot', Subtype: subtype, Rect: [72, 72, 144, 144] })));
 }
 
+/**
+ * A 6" x 9" book for the deep content check: `pages` lists each page's text lines (drawn inside the margins
+ * in embedded Garamond) and optional link URLs (link annotations with a URI action).
+ * @param {Array<{ lines?: string[], links?: string[] }>} pages
+ */
+export async function makeContentBook(pages) {
+  const doc = await PDFDocument.create();
+  const font = await embedGaramond(doc);
+  const ctx = doc.context;
+  for (const { lines = [], links = [] } of pages) {
+    const page = doc.addPage([6 * PT, 9 * PT]);
+    lines.forEach((text, k) => page.drawText(text, { font, size: 11, x: 1 * PT, y: (8 - 0.25 * k) * PT }));
+    for (const url of links) {
+      page.node.addAnnot(ctx.register(ctx.obj({
+        Type: 'Annot', Subtype: 'Link', Rect: [72, 72, 144, 90], Border: [0, 0, 0],
+        A: { Type: 'Action', S: 'URI', URI: PDFString.of(url) },
+      })));
+    }
+  }
+  return doc.save();
+}
+
 /** Marks the file as encrypted (an /Encrypt entry in the trailer). Content is not actually scrambled. */
 export function markEncrypted(doc) {
   const ctx = doc.context;

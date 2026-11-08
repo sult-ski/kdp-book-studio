@@ -110,7 +110,7 @@ await test("matches KDP's own cover calculator: 5.5x8.5, white, 63 pages (count 
 });
 
 await test('footer date: the latest lastVerified anywhere in the config', () => {
-  assert.equal(latestVerified(specs), '2026-11-06');
+  assert.equal(latestVerified(specs), '2026-11-08');
   assert.equal(latestVerified({ _meta: { lastVerified: '2026-01-02' }, a: { lastVerified: '2025-12-31' }, b: { c: { lastVerified: '2026-03-04' } } }), '2026-03-04');
 });
 

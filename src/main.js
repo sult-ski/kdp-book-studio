@@ -41,6 +41,8 @@ $('settings').addEventListener('submit', async (e) => {
     inkPaper: $('inkPaper').value,
     bleed: document.querySelector('input[name=bleed]:checked').value === 'yes',
     toleranceIn: Number.isFinite(tol) && tol >= 0 ? tol : specs.app.sizeToleranceIn,
+    // Deep content check: preview-only switch (?deep=1) until the D4 toggle.
+    deepContent: new URLSearchParams(location.search).has('deep'),
   };
 
   // Too big to upload to KDP, and too big to load safely in a browser tab.
