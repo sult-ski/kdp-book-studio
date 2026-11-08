@@ -192,7 +192,7 @@
     }
   },
   "content": {
-    "_note": "Deep content check (Phase 2.5). Phrase lists from docs/research/deep-content-research.pdf. Some table cells in that PDF are clipped (also in its embedded text), so lists use the visible text plus terms the research names elsewhere (Top 15 list). Phrases match case-insensitively with flexible spaces; patterns are JavaScript regex sources (flags giu). evidence: official = KDP Help/Terms text, reported = author/news account, both = official rule + reported case.",
+    "_note": "Deep content check (Phase 2.5). Phrase lists from docs/research/deep-content-research.pdf. Some table cells in that PDF are clipped (also in its embedded text), so lists use the visible text plus terms the research names elsewhere (Top 15 list). Phrases match case-insensitively with flexible spaces; patterns are JavaScript regex sources (flags gimu: ^ and $ match line starts/ends). evidence: official = KDP Help/Terms text, reported = author/news account, both = official rule + reported case.",
     "lastVerified": "2026-11-08",
     "snippetChars": 50,
     "sources": {
@@ -201,7 +201,11 @@
       "printGuidelines2018": "https://m.media-amazon.com/images/G/01/kindle-publication/KDP_Print_Publishing_Guidelines_01_24_2018._CB1516837113_.pdf",
       "gutenbergLicense": "https://www.gutenberg.org/policy/license.html",
       "aiReported": "https://undetectable.ai/blog/books-written-by-ai-on-amazon/",
-      "storeLinksReported": "https://www.ebookpbook.com/2026/05/13/ebook-hyperlinks-kindle-broken/"
+      "storeLinksReported": "https://www.ebookpbook.com/2026/05/13/ebook-hyperlinks-kindle-broken/",
+      "contentQuality": "https://kdp.amazon.com/en_US/help/topic/G200952510",
+      "bonusContent": "https://kdp.amazon.com/en_US/help/topic/G202018960",
+      "freelyAvailableReported": "https://www.kdpcommunity.com/s/question/0D5f400000FHsdMCAT/book-blocked-and-no-i-did-not-steal-content-from-the-web?language=en_US",
+      "reviewsReported": "https://book-business-kdp-amazon.com/en/blog/how-to-get-book-reviews-on-amazon/"
     },
     "rules": [
       {
@@ -270,7 +274,7 @@
         "severity": "fail",
         "accuracy": "verified",
         "evidence": "official",
-        "source": "contentGuidelines",
+        "source": "contentQuality",
         "target": "urls",
         "patterns": [
           "books\\.apple\\.com",
@@ -291,7 +295,7 @@
         "severity": "warn",
         "accuracy": "best-effort",
         "evidence": "official",
-        "source": "contentGuidelines",
+        "source": "contentQuality",
         "patterns": [
           "available (on|at|from) .{0,40}(Apple Books|iBooks|Kobo|Barnes|Nook|Google Play|Smashwords|all (major )?retailers)"
         ]
@@ -324,7 +328,7 @@
         "severity": "info",
         "accuracy": "best-effort",
         "evidence": "official",
-        "source": "contentGuidelines",
+        "source": "contentQuality",
         "target": "urls",
         "patterns": [
           "mailchimp",
@@ -338,12 +342,139 @@
           "docs\\.google\\.com/forms",
           "(?<![\\w-])bit\\.ly/"
         ]
+      },
+      {
+        "id": "freelyAvailable",
+        "label": "Text that may be freely available elsewhere",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "both",
+        "source": "contentGuidelines",
+        "phrases": [
+          "originally published on",
+          "first appeared on my blog",
+          "Wattpad",
+          "Royal Road",
+          "Archive of Our Own",
+          "fanfiction.net",
+          "Creative Commons",
+          "private label rights",
+          "resell rights",
+          "master resell rights"
+        ],
+        "patterns": [
+          "\\bAO3\\b",
+          "\\bCC BY(-[A-Z]{2})*\\b",
+          "\\bPLR\\b"
+        ]
+      },
+      {
+        "id": "companionGuide",
+        "label": "Summary or companion guide",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentGuidelines",
+        "caseSensitivePatterns": [
+          "\\b(Summary|SUMMARY) (of|OF) [A-Z].{0,80} (by|BY) [A-Z]",
+          "^\\s*(Summary|Study Guide|Workbook|Analysis|SUMMARY|STUDY GUIDE|WORKBOOK|ANALYSIS) (of|for|OF|FOR)\\b"
+        ],
+        "_note": "The heading pattern is case-sensitive: a PDF line that starts mid-sentence with \"analysis of\" is not a title.",
+        "phrases": [
+          "Workbook for",
+          "Key Takeaways from",
+          "This is an unofficial"
+        ]
+      },
+      {
+        "id": "redirect",
+        "label": "Content readers must get somewhere else",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentQuality",
+        "phrases": [
+          "to continue reading",
+          "read the rest at",
+          "download the full",
+          "subscribe to get the next chapter",
+          "access the full content at",
+          "scan the QR code to read"
+        ]
+      },
+      {
+        "id": "incentivisedReviews",
+        "label": "Rewards for reviews",
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "reported",
+        "source": "reviewsReported",
+        "patterns": [
+          "\\b(5|five)[- ]star (review|rating)s?\\b",
+          "\\bin exchange for (a|an|your)( honest)? review\\b",
+          "gift card[\\s\\S]{0,80}\\breview|\\breview[\\s\\S]{0,80}gift card",
+          "\\b(free|bonus)[\\s\\S]{0,40}\\bfor (leaving|writing) a review\\b"
+        ],
+        "_note": "Polite requests (\"please leave a review\") are allowed and not matched."
+      },
+      {
+        "id": "lyricsQuotes",
+        "label": "Song lyrics or quotations",
+        "severity": "info",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentGuidelines",
+        "phrases": [
+          "lyrics by",
+          "words and music by"
+        ],
+        "_note": "The research's quote-with-attribution regex is not used: it matches every epigraph. Only explicit lyric credits are flagged."
       }
     ],
     "aiDisclosure": {
       "severity": "info",
       "source": "contentGuidelines",
       "evidence": "official"
+    },
+    "structure": {
+      "_note": "Rules that look at where things are in the book rather than single phrases.",
+      "chapterHeading": "^\\s*(chapter|part)\\s+(\\d{1,3}|[ivxlc]{1,7}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\\b[^\\n]{0,60}$",
+      "firstChapter": "^\\s*(chapter\\s+(1|one|i)|part\\s+(1|one|i))\\b",
+      "tocPageMinHeadings": 3,
+      "runningHeadGap": 2,
+      "_runningHeadGapNote": "A chapter heading seen again within this many pages is a running head, not a repeated chapter.",
+      "bonus": {
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "bonusContent",
+        "maxShare": 0.1,
+        "headingLines": 3,
+        "markers": [
+          "Sneak Peek",
+          "Preview of",
+          "Bonus Story",
+          "Bonus Chapter",
+          "Bonus Content",
+          "Excerpt from",
+          "Also by"
+        ],
+        "backOnly": ["Also by"],
+        "_backOnlyNote": "\"Also by\" lists are normal front matter, so they only count towards the end-of-book share."
+      },
+      "duplicates": {
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentQuality",
+        "minWords": 40
+      },
+      "repeatedHeadings": {
+        "severity": "warn",
+        "accuracy": "best-effort",
+        "evidence": "official",
+        "source": "contentQuality"
+      }
     }
   }
 }

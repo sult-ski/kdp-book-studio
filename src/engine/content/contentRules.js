@@ -2,6 +2,8 @@
 // page's text (and, for `target: "urls"` rules, its link URLs too). One issue per rule per page,
 // carrying the first matched snippet. No DOM.
 
+import { runStructureRules } from './contentStructure.js';
+
 // Plain-English wording per rule. Spec values (phrases, severity, sources) stay in the config.
 const WORDING = {
   gutenberg: {
@@ -39,6 +41,31 @@ const WORDING = {
     why: 'KDP lists sign-up forms among links it does not want in books. We don\'t know how often this is enforced.',
     fix: 'Usually fine. To be safe, link to your own author website instead of the sign-up form or a short link.',
   },
+  freelyAvailable: {
+    what: 'This page says some text comes from a free website, a shared licence or resell-rights material.',
+    why: 'KDP blocks books whose text is freely available on the web (Wattpad, blogs, fan-fiction sites) or sold with resell rights, unless you own the rights and can prove it.',
+    fix: "If you wrote it and own the rights, be ready to show KDP where it was published (KDP usually allows five days to reply). If it is PLR, resell-rights or someone else's free content, don't publish it as is.",
+  },
+  companionGuide: {
+    what: 'This page looks like a summary, workbook or companion guide to another book.',
+    why: "KDP's content guidelines restrict summaries and study guides of copyrighted books; outside the U.S. they need the copyright holder's written permission.",
+    fix: "If your book is a summary or companion to someone else's copyrighted book, get written permission or don't publish it. If the match is about your own book, you can ignore this.",
+  },
+  redirect: {
+    what: 'This page sends readers elsewhere to get the rest of the content.',
+    why: 'KDP treats main content that is only available through an external link as a critical quality issue.',
+    fix: 'Put the full content inside the book. Optional extras online are fine, but the book must be complete without them.',
+  },
+  incentivisedReviews: {
+    what: 'This page seems to offer a reward for a review, or ask for a specific star rating.',
+    why: 'Amazon does not allow reviews in exchange for gifts, money or free products, or asking for a particular rating. A plain "please leave a review" is fine.',
+    fix: 'Change it to a neutral request, e.g. "If you enjoyed this book, please consider leaving an honest review."',
+  },
+  lyricsQuotes: {
+    what: 'This page credits song lyrics.',
+    why: 'Song lyrics are almost always under copyright, even a few lines, and KDP may ask you to prove you have permission.',
+    fix: "Make sure you have written permission from the lyrics' publisher, or remove the lyrics. Song titles alone are fine.",
+  },
 };
 
 const AI_DISCLOSURE = {
@@ -50,14 +77,14 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Phrase → regex: case-insensitive, any run of spaces/line breaks between words, whole words at the ends. */
 const phraseRe = (p) => `(?<![\\w])${p.trim().split(/\s+/).map(escapeRe).join('\\s+')}(?![\\w])`;
 
-/** Compiles one combined, case-insensitive regex per rule (cached on the rule object's id). */
+/** Compiles one combined, case-insensitive regex per rule; ^ and $ match at line starts and ends. */
 export function compileRules(content) {
   return content.rules.map((rule) => {
     const parts = [...(rule.patterns ?? []), ...(rule.phrases ?? []).map(phraseRe)];
     return {
       rule,
-      re: parts.length ? new RegExp(parts.map((p) => `(?:${p})`).join('|'), 'giu') : null,
-      reCase: rule.caseSensitivePatterns?.length ? new RegExp(rule.caseSensitivePatterns.map((p) => `(?:${p})`).join('|'), 'gu') : null,
+      re: parts.length ? new RegExp(parts.map((p) => `(?:${p})`).join('|'), 'gimu') : null,
+      reCase: rule.caseSensitivePatterns?.length ? new RegExp(rule.caseSensitivePatterns.map((p) => `(?:${p})`).join('|'), 'gmu') : null,
     };
   });
 }
@@ -136,6 +163,8 @@ export function runContentRules(specs, pages) {
       message: AI_DISCLOSURE.message, fix: AI_DISCLOSURE.fix,
     });
   }
+
+  kept.push(...runStructureRules(specs, pages));
 
   const textless = pages.filter((p) => !p.text.trim()).length;
   kept.push({
