@@ -111,6 +111,9 @@
     "_minImagePixelsNote": "Images narrower or shorter than this many pixels are treated as fills, lines or gradients, not pictures, and skipped by the DPI check.",
     "edgeInkIn": 0.02,
     "_edgeInkNote": "Ink this close to a page edge counts as touching it (bleed checks).",
+    "barcodeEdgeContrast": 48,
+    "barcodeMinEdgeIn": 0.1,
+    "_barcodeEdgeNote": "Barcode area: a pixel is an edge when one RGB channel differs from its right or lower neighbour by more than barcodeEdgeContrast (0-255). Flat colours and smooth gradients have none. The area is flagged when edges add up to more than barcodeMinEdgeIn inches, or a text item sits in it. Owner decision Nov 2026: KDP's white box covers a plain background harmlessly.",
     "inkThreshold": 250,
     "_inkThresholdNote": "A pixel counts as ink when its darkest RGB channel is below this (0-255). 250 ignores near-white paper tints."
   },
@@ -182,6 +185,8 @@
     },
     "images": {
       "minDpi": 300,
+      "belowMinSeverity": "info",
+      "_note": "Owner decision Nov 2026: real KDP covers at 177 DPI were accepted, so low DPI on a cover is Good to know. Interior stays warn.",
       "source": "cover",
       "lastVerified": "2026-11-06"
     }

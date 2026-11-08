@@ -155,7 +155,7 @@ export async function makeTextBook(n, m = {}) {
  * Draws an image of pxW x pxH pixels at w x h inches, with its bottom-left corner at (x, y) inches.
  * So its resolution is pxW / w DPI. `mask: true` makes a 1-bit stencil mask (line art).
  */
-export function addImage(doc, page, { pxW, pxH, x = 1, y = 1, w, h, mask = false }) {
+export function addImage(doc, page, { pxW, pxH, x = 1, y = 1, w, h, mask = false, gradient = false }) {
   const ctx = doc.context;
   let data;
   let dict;
@@ -164,7 +164,9 @@ export function addImage(doc, page, { pxW, pxH, x = 1, y = 1, w, h, mask = false
     data = new Uint8Array(row * pxH).map((_, i) => (Math.floor(i / row) % 2 ? 0xaa : 0x55));
     dict = { Type: 'XObject', Subtype: 'Image', Width: pxW, Height: pxH, ImageMask: true, BitsPerComponent: 1 };
   } else {
-    data = new Uint8Array(pxW * pxH * 3).map((_, i) => (i * 7) % 256); // a busy pattern, not a flat fill
+    data = gradient // a smooth left-to-right blue-to-orange blend
+      ? new Uint8Array(pxW * pxH * 3).map((_, i) => { const t = (Math.floor(i / 3) % pxW) / pxW; return Math.round([40 + 200 * t, 80 + 60 * t, 200 - 160 * t][i % 3]); })
+      : new Uint8Array(pxW * pxH * 3).map((_, i) => (i * 7) % 256); // a busy pattern, not a flat fill
     dict = { Type: 'XObject', Subtype: 'Image', Width: pxW, Height: pxH, ColorSpace: 'DeviceRGB', BitsPerComponent: 8 };
   }
   const ref = ctx.register(ctx.flateStream(data, dict));

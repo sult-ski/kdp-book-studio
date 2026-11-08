@@ -12,7 +12,7 @@ const MB = 1e6;
 // Cover rules not checked (or only partly checked). Listed so authors know to check them against the template.
 const NOT_CHECKED_YET = [
   'Text converted to outlines or drawn into images: only live text is checked against the safe area, fold lines and 7 pt minimum',
-  'Barcode area: we check that it looks clear and white, but cannot tell your own barcode from artwork',
+  'Barcode area: we look for text and artwork details there (a plain background is fine), but cannot tell your own barcode from artwork',
 ];
 
 let worker;

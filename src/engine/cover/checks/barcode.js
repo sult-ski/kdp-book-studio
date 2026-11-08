@@ -1,50 +1,57 @@
-// Barcode area (best-effort): blocked = warn, only the minimum box clear = info. KDP prints the ISBN barcode on the back cover, bottom right, on a white box
-// at least 0.25" from the spine and the trim. We look at the rendered cover: is the suggested 2" x 1.2" box clear
-// and white? If not, is at least the minimum 1.4" x 0.8" box clear? Pixels can't tell "your own barcode" from
-// artwork, so this is advice only.
+// Barcode area (best-effort, warn). KDP prints the ISBN barcode on a white box on the back cover, bottom right,
+// at least 0.25" from the spine and the trim. A flat colour or smooth gradient there is fine: the white box simply
+// covers it. We flag only text or distinct elements (edges, sharp contrast changes) inside the suggested 2" x 1.2" box.
+// Pixels can't tell "your own barcode" from artwork, so this is advice only.
 import { sourceUrl } from '../../specs.js';
-import { hasInk } from '../../ink.js';
 
 /**
  * @param {object} specs
- * @param {{ dpi:number, widthPx:number, heightPx:number, rgba:Uint8ClampedArray }} render
+ * @param {{ dpi:number, widthPx:number, heightPx:number, rgba:Uint8ClampedArray,
+ *   textItems?:Array<{ str:string, rect:[number,number,number,number] }> }} render
  * @param {ReturnType<import('../layout.js').coverLayout>} L
  * @returns {Array<object>} issues (at most one)
  */
 export function checkBarcodeArea(specs, render, L) {
   const bc = specs.cover.barcode;
-  const suggested = L.rects.barcode;
-  // The minimum box shares the suggested box's bottom-right corner (clearance from spine and bottom trim).
-  const min = {
-    x: suggested.x + suggested.width - bc.minIn.width,
-    y: suggested.y + suggested.height - bc.minIn.height,
-    width: bc.minIn.width, height: bc.minIn.height,
-  };
+  const box = L.rects.barcode;
   const d = render.dpi;
   // Shrink by one pixel so anti-aliased art just outside the box doesn't count.
-  const px = (r) => [r.x * d + 1, r.y * d + 1, (r.x + r.width) * d - 1, (r.y + r.height) * d - 1];
-  const clear = (r) => !hasInk(render, specs.app.inkThreshold, px(r));
-  if (clear(suggested)) return [];
+  const x0 = Math.max(0, Math.ceil(box.x * d) + 1);
+  const y0 = Math.max(0, Math.ceil(box.y * d) + 1);
+  const x1 = Math.min(render.widthPx - 1, Math.floor((box.x + box.width) * d) - 1);
+  const y1 = Math.min(render.heightPx - 1, Math.floor((box.y + box.height) * d) - 1);
+
+  const text = (render.textItems ?? []).filter(({ rect: [a, b, c, e] }) => c > x0 && a < x1 && e > y0 && b < y1);
+  const edges = countEdges(render, [x0, y0, x1, y1], specs.app.barcodeEdgeContrast);
+  const hasEdges = edges > specs.app.barcodeMinEdgeIn * d;
+  if (!text.length && !hasEdges) return [];
 
   const size = (w, h) => `${w}" x ${h}"`;
-  const where = `on the back cover, bottom right, ${bc.clearanceIn}" from the spine and the bottom trim`;
-  const own = 'If you printed your own barcode there, you can ignore this.';
-  const base = {
-    checkId: 'coverBarcode', severity: 'info', page: 1, accuracy: 'best-effort',
-    source: sourceUrl(specs, bc), required: `clear ${bc.background} box ${size(bc.suggestedIn.width, bc.suggestedIn.height)}`,
-  };
-  if (clear(min)) {
-    return [{
-      ...base, id: 'cover-barcode-small', bbox: suggested,
-      measured: `only the minimum ${size(bc.minIn.width, bc.minIn.height)} is clear`,
-      message: `KDP prints the barcode ${where}. The minimum ${size(bc.minIn.width, bc.minIn.height)} box there is clear and white, but the suggested ${size(bc.suggestedIn.width, bc.suggestedIn.height)} box has artwork or text in it. ${own}`,
-      fix: `Keep a white ${size(bc.suggestedIn.width, bc.suggestedIn.height)} area clear there if you can (the template from the Cover calculator tab shows it). The minimum size usually works.`,
-    }];
-  }
+  const found = text.length
+    ? `text ("${text.map((t) => t.str.trim()).join(' ').slice(0, 40)}")`
+    : 'shapes, lines or sharp colour changes';
   return [{
-    ...base, id: 'cover-barcode-blocked', severity: 'warn', bbox: suggested,
-    measured: 'artwork or a coloured background in the barcode area',
-    message: `KDP prints the barcode ${where}, on a ${bc.background} box at least ${size(bc.minIn.width, bc.minIn.height)} (${size(bc.suggestedIn.width, bc.suggestedIn.height)} suggested). That area of your cover isn't clear and white, so the barcode box will cover part of your design. ${own}`,
-    fix: `Move text and important artwork out of that corner and give it a white background, at least ${size(bc.minIn.width, bc.minIn.height)}. Use the template from the Cover calculator tab to see the exact box.`,
+    id: 'cover-barcode-blocked', checkId: 'coverBarcode', severity: 'warn', page: 1, accuracy: 'best-effort',
+    bbox: box,
+    source: sourceUrl(specs, bc),
+    required: `no text or artwork details in the ${size(bc.suggestedIn.width, bc.suggestedIn.height)} barcode box`,
+    measured: found,
+    message: `KDP prints the barcode on the back cover, bottom right, ${bc.clearanceIn}" from the spine and the bottom trim, on a ${bc.background} box at least ${size(bc.minIn.width, bc.minIn.height)} (${size(bc.suggestedIn.width, bc.suggestedIn.height)} suggested). We found ${found} there, which the barcode box will cover. A plain colour or gradient background is fine. If you printed your own barcode there, you can ignore this.`,
+    fix: `Move text and artwork details out of that corner (a plain background can stay). Use the template from the Cover calculator tab to see the exact box.`,
   }];
+}
+
+/** Pixels whose colour jumps by more than `contrast` (any RGB channel) to the right or lower neighbour. */
+function countEdges({ widthPx: W, rgba }, [x0, y0, x1, y1], contrast) {
+  let n = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * W + x) * 4;
+      for (const j of [i + 4, i + W * 4]) {
+        if (Math.abs(rgba[i] - rgba[j]) > contrast || Math.abs(rgba[i + 1] - rgba[j + 1]) > contrast
+          || Math.abs(rgba[i + 2] - rgba[j + 2]) > contrast) { n++; break; }
+      }
+    }
+  }
+  return n;
 }

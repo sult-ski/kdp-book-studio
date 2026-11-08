@@ -14,7 +14,9 @@ const LIBREOFFICE_EXPORT = 'If the original picture is sharp, check your export 
  * @returns {Array<object>} issues
  */
 export function checkPageImages(specs, page, images) {
-  const { minDpi, appVeryLowBelowDpi } = specs.images;
+  const { minDpi, appVeryLowBelowDpi, belowMinSeverity } = specs.images;
+  // Covers set belowMinSeverity "info": one gentle level, no "very low" tier. Interior: unset, so warn as before.
+  const soft = belowMinSeverity === 'info';
   const minPx = specs.app.minImagePixels;
   const source = sourceUrl(specs, specs.images);
   const issues = [];
@@ -26,7 +28,7 @@ export function checkPageImages(specs, page, images) {
 
     const dpi = Math.round(Math.min(img.pxW / img.widthIn, img.pxH / img.heightIn));
     if (dpi >= minDpi) return;
-    const veryLow = dpi < appVeryLowBelowDpi;
+    const veryLow = !soft && dpi < appVeryLowBelowDpi;
     const shown = `${inches(img.widthIn)} x ${inches(img.heightIn)}`;
     const needW = Math.ceil(img.widthIn * minDpi);
     const needH = Math.ceil(img.heightIn * minDpi);
@@ -36,12 +38,14 @@ export function checkPageImages(specs, page, images) {
       id: `images-${veryLow ? 'verylow' : 'low'}-p${page.number}-${index}`,
       checkId: 'images',
       groupKey: `images|${veryLow ? 'verylow' : 'low'}`,
-      severity: 'warn',
+      severity: soft ? 'info' : 'warn',
       page: page.number,
       bbox: img.bboxIn,
       measured: `${dpi} DPI`,
       required: `${minDpi} DPI`,
-      message: veryLow
+      message: soft
+        ? `${what} is ${dpi} DPI, below KDP's recommended ${minDpi} DPI, so it may print slightly soft. KDP usually accepts it. It is ${img.pxW} x ${img.pxH} pixels shown at ${shown}.`
+        : veryLow
         ? `${what} is only ${dpi} DPI: very low (below ${appVeryLowBelowDpi} DPI, our threshold; KDP's minimum is ${minDpi} DPI), so it will likely print blurry or pixelated. It is ${img.pxW} x ${img.pxH} pixels shown at ${shown}.`
         : `${what} is ${dpi} DPI. KDP recommends at least ${minDpi} DPI so images print sharply. It is ${img.pxW} x ${img.pxH} pixels shown at ${shown}.`,
       fix: `Use a higher-resolution version (at least ${needW} x ${needH} pixels at this size), or show it smaller. ${LIBREOFFICE_EXPORT}`,

@@ -37,12 +37,13 @@ await test('fonts only on extra pages are not reported twice (multi-page cover i
   assert.ok(r.issues.every((i) => i.page == null || i.page === 1), ids(r).join());
 });
 
-await test('150 DPI cover image: warn, with the cover source', async () => {
+await test('150 DPI cover image: Good to know, "may print slightly soft", cover source', async () => {
   const low = await run({ images: [{ pxW: 870, pxH: 1298, x: 6.6, y: 0.3, w: 5.8, h: 8.65 }] });
   const [i] = byCheck(low, 'images');
-  assert.equal(i.severity, 'warn');
+  assert.equal(i.severity, 'info');
   assert.equal(i.measured, '150 DPI');
-  assert.match(i.message, /our threshold/);
+  assert.match(i.message, /may print slightly soft/);
+  assert.doesNotMatch(i.message, /our threshold/);
   assert.equal(i.source, COVER_SRC);
 });
 
@@ -55,23 +56,31 @@ await test('text under 7 pt on the cover: warn, best-effort, with cover-specific
   assert.equal(i.source, specs._meta.sources.fontSize);
 });
 
-await test('art over the whole barcode area: warn, best-effort, says ignore if own barcode', async () => {
+await test('solid-colour back cover over the barcode area: no issue', async () => {
   const r = await run({ fills: [{ x: 0, y: 0, w: 6.2, h: 9.25 }] });
+  assert.deepEqual(byCheck(r, 'coverBarcode'), []);
+});
+
+await test('smooth gradient over the barcode area: no issue', async () => {
+  const r = await run({ images: [{ pxW: 600, pxH: 40, x: 0, y: 0, w: 6.125, h: 9.25, gradient: true }] });
+  assert.deepEqual(byCheck(r, 'coverBarcode'), []);
+});
+
+await test('text in the barcode zone (on a coloured back): Worth checking, best-effort, names the text', async () => {
+  const r = await run({ fills: [{ x: 0, y: 0, w: 6.2, h: 9.25 }], text: [{ str: 'ISBN here', cx: 4.9, cy: 8.5, size: 12 }] });
   const [i] = byCheck(r, 'coverBarcode');
   assert.equal(i.id, 'cover-barcode-blocked');
   assert.equal(i.severity, 'warn');
   assert.equal(i.accuracy, 'best-effort');
-  assert.match(i.message, /1\.4" x 0\.8"/);
+  assert.match(i.measured, /ISBN here/);
   assert.match(i.message, /own barcode/);
   assert.equal(i.source, specs._meta.sources.barcode);
   assert.ok(i.bbox && Math.abs(i.bbox.width - 2) < 1e-9);
 });
 
-await test('art in the suggested box but the minimum box clear: info, "minimum is clear"', async () => {
-  const r = await run({ fills: [{ x: 3.9, y: 7.9, w: 0.4, h: 0.3 }] });
-  const [i] = byCheck(r, 'coverBarcode');
-  assert.equal(i.id, 'cover-barcode-small');
-  assert.equal(i.severity, 'info');
+await test('a shape edge inside the barcode zone: Worth checking', async () => {
+  const r = await run({ fills: [{ x: 3.9, y: 7.9, w: 0.6, h: 0.5 }] });
+  assert.equal(byCheck(r, 'coverBarcode')[0]?.severity, 'warn');
 });
 
 await test('art just outside the barcode box (0.25" clearance strip): no barcode issue', async () => {
