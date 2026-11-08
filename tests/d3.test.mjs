@@ -113,6 +113,7 @@ await test('metadata: ISBN in the book that differs from the entered one → war
   assert.equal(mm[0].severity, 'fail');
   assert.equal(mm[0].evidence, 'both');
   assert.equal(mm[0].sourceLabel, 'KDP Metadata Guidelines + reported rejection');
+  assert.deepEqual(mm[0].reportedSource, { url: 'https://www.publishing.co.uk/guides/kdp-error-isbn-mismatch/', evidence: 'reported', lastVerified: '2026-11-08' });
   // No ISBN entered → never checked; spaces/hyphens ignored.
   assert.deepEqual(only(rules(text), 'content.isbnMismatch'), []);
   assert.deepEqual(only(rules(['ISBN 978 0 306 40615 7'], { metadata: { isbn: '9780306406157' } }), 'content.isbnMismatch'), []);

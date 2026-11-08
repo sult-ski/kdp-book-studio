@@ -206,7 +206,8 @@
       "bonusContent": "https://kdp.amazon.com/en_US/help/topic/G202018960",
       "freelyAvailableReported": "https://www.kdpcommunity.com/s/question/0D5f400000FHsdMCAT/book-blocked-and-no-i-did-not-steal-content-from-the-web?language=en_US",
       "amazonReviewsPolicy": "https://www.amazon.com/gp/help/customer/display.html?nodeId=GLHXEX85MENUE4XF",
-      "metadataGuidelines": "https://kdp.amazon.com/en_US/help/topic/G201097560"
+      "metadataGuidelines": "https://kdp.amazon.com/en_US/help/topic/G201097560",
+      "isbnMismatchReported": "https://www.publishing.co.uk/guides/kdp-error-isbn-mismatch/"
     },
     "rules": [
       {
@@ -485,7 +486,7 @@
       "_searchNote": "Title and author are looked for on the first pages (title page, copyright page), where KDP reviewers look.",
       "titleMissing": { "severity": "warn", "accuracy": "best-effort" },
       "authorMissing": { "severity": "warn", "accuracy": "best-effort" },
-      "isbnMismatch": { "severity": "fail", "accuracy": "verified", "evidence": "both", "sourceLabel": "KDP Metadata Guidelines + reported rejection", "_note": "Owner decision 2026-11-08: Must fix. Only runs when an ISBN was entered; digits compared, ISBN-10 and -13 treated as equal." },
+      "isbnMismatch": { "severity": "fail", "accuracy": "verified", "evidence": "both", "sourceLabel": "KDP Metadata Guidelines + reported rejection", "reportedSource": { "source": "isbnMismatchReported", "evidence": "reported", "lastVerified": "2026-11-08" }, "_note": "Owner decision 2026-11-08: Must fix. Only runs when an ISBN was entered; digits compared, ISBN-10 and -13 treated as equal." },
       "isbnInvalid": { "severity": "warn", "accuracy": "verified" },
       "publisherBrand": { "severity": "warn", "accuracy": "verified" },
       "publisherLine": { "severity": "warn", "accuracy": "best-effort" },

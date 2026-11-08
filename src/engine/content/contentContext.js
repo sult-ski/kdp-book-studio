@@ -142,6 +142,7 @@ function metadataIssues(specs, pages, ctx) {
       id: `content-${key}${fields.page ? `-p${fields.page}` : ''}`, checkId: `content.${key}`, groupKey: key, page: null,
       severity: r.severity, accuracy: r.accuracy, evidence: r.evidence ?? md.evidence, source: r.source ? specs.content.sources[r.source] : src,
       sourceLabel: r.sourceLabel ?? 'Why KDP asks for this', ...fields,
+      ...(r.reportedSource && { reportedSource: { url: specs.content.sources[r.reportedSource.source], evidence: r.reportedSource.evidence, lastVerified: r.reportedSource.lastVerified } }),
     });
   };
   const { title, author, isbn, publisher } = ctx.metadata;
