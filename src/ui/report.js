@@ -154,6 +154,7 @@ function proofsHtml(g, members, pageInfo, thumbs) {
       ${figures}
       ${more ? `<p class="proofs__more">and ${more} more ${more === 1 ? 'page' : 'pages'}</p>` : ''}
     </div>
+    ${shown.map((p) => pageInfo.get(p).legend).find(Boolean) ?? ''}
     ${shown.some((p) => pageInfo.get(p).layout) ? `<p class="proofs__legend"><span class="key key--safe"></span> Safe area for text <span class="key key--zone"></span> Too close to the edge or binding</p>` : ''}`;
 }
 
@@ -174,7 +175,7 @@ function proofHtml(page, pageIssues, thumb) {
   // so size them relative to the page: k = 1 for a 9" tall page.
   const k = Math.max(w, h) / 9;
   const pad = 0.08 * k;
-  const marks = pageIssues.filter((i) => i.bbox).map((i) => {
+  const marks = page.overlay ? page.overlay(pageIssues) : pageIssues.filter((i) => i.bbox).map((i) => {
     const b = i.bbox;
     const x = Math.max(0, b.x - pad);
     const y = Math.max(0, b.y - pad);

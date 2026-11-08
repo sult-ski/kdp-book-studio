@@ -19,7 +19,7 @@ Tabs alongside the interior checker, same design system, 100% client-side. Specs
 - [x] **C2 — Cover size + spine check.** Cover tab: upload cover PDF, compare its size to the calculated size (tolerance), spine text only from 79 pages.
 - [x] **C3 — Safe area, spine text and fold lines.** Live text outside the safe area (fail), spine text crossing a fold line (warn), spine text within 0.0625" of the spine edge (warn), multi-page cover PDF (fail). Outlined text can't be told from cover art: listed under "Not checked yet".
 - [x] **C4 — Fonts, DPI, barcode.** Reuse the interior engine for fonts and image DPI; text under 7 pt; barcode area check (best-effort info).
-- [ ] **C5 — Cover report UI.** Zone overlay thumbnail; real-cover test with the owner's own book cover.
+- [x] **C5 — Cover report UI.** Zone overlay thumbnail (bleed, folds, safe areas, barcode box, problem outlines, Show guides toggle); guides hidden when the cover size fails. Real-cover test: owner, pending.
 
 ## Phase 2.5: Deep content check (start only after C5 is done)
 Optional text scan of the interior, 100% client-side, no APIs. Based on `docs/research/deep-content-research.pdf` (Top 15 checks). Rules live in a new `content` section of `kdp-specs.json`: phrase/regex lists, `evidence: official | reported | both`, source URL (from the research PDF's links) and lastVerified. Issues show the matched snippet and page number. Exact-pattern rules (Gutenberg markers, lorem ipsum, store URLs) are `verified`; heuristic rules are `best-effort`. Text inside images or converted to outlines can't be read; say so in the report.

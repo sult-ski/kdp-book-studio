@@ -5,6 +5,7 @@ import { groupIssues } from '../engine/runChecks.js';
 import { inches3 } from '../engine/format.js';
 import { esc, verdictHtml, groupHtml } from './report.js';
 import { initFilePicker } from './filePicker.js';
+import { coverOverlaySvg, guidesFit } from './coverOverlay.js';
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6;
@@ -78,12 +79,15 @@ function renderCoverReport(root, data) {
   const { specs, issues, pages } = data;
   const groups = groupIssues(issues);
   const counts = Object.fromEntries(['fail', 'warn', 'info'].map((sev) => [sev, groups.filter((g) => g.severity === sev).length]));
-  const pageInfo = new Map(pages.map((p) => [p.number, { ...p, caption: 'Your cover' }]));
+  const fit = guidesFit(issues);
+  const overlay = (list) => coverOverlaySvg(data.layout, pages[0], list, { guides: fit });
+  const pageInfo = new Map(pages.map((p) => [p.number, { ...p, caption: 'Your cover', overlay, legend: fit ? legendHtml(specs) : '' }]));
   const ctx = { issues, pageInfo, thumbs, specs, prefix: 'cover-', onePageLabel: 'Cover' };
 
   root.innerHTML = `
     <div class="report">
       ${verdictHtml(counts, 'cover', 'cover-')}
+      ${overviewHtml(pages[0], thumbs.get(1), overlay(issues), fit, specs)}
       ${['fail', 'warn', 'info'].map((sev) => groupHtml(sev, groups.filter((g) => g.severity === sev), ctx)).join('')}
       ${detailsHtml(data)}
     </div>`;
@@ -93,9 +97,41 @@ function renderCoverReport(root, data) {
   report.addEventListener('click', (e) => {
     if (e.target.closest('a[data-group="info"]')) report.querySelector('details.group[data-sev="info"]').open = true;
   });
+  const toggle = report.querySelector('#cover-guides');
+  toggle?.addEventListener('change', () => report.querySelector('.cover-view').classList.toggle('cover-view--plain', !toggle.checked));
   report.querySelector('.verdict__title').focus({ preventScroll: true });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   report.querySelector('.verdict').scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
+}
+
+const legendHtml = (specs) => `
+  <p class="proofs__legend cover-legend">
+    <span class="legend-item"><span class="key key--zone"></span> Bleed, cut off (${specs.cover.size.bleedIn}")</span>
+    <span class="legend-item"><span class="key key--fold"></span> Where the spine may fold (&plusmn;${specs.cover.fold.varianceIn}")</span>
+    <span class="legend-item"><span class="key key--safe"></span> Safe area for text</span>
+    <span class="legend-item"><span class="key key--barcode"></span> Barcode box, keep empty</span>
+    <span class="legend-item"><span class="key key--mark"></span> A problem we found</span>
+  </p>`;
+
+/** The whole cover with KDP's guides on top, so authors see where each zone falls on their own artwork. */
+function overviewHtml(page, thumb, svg, fit, specs) {
+  const r = (n) => Math.round(n * 1000) / 1000;
+  return `
+    <section class="card cover-overview" aria-labelledby="cover-overview-title">
+      <div class="cover-overview__head">
+        <h2 id="cover-overview-title" class="card__title">Your cover with KDP's guides</h2>
+        ${fit ? `<label class="switch"><input type="checkbox" id="cover-guides" checked> Show guides</label>` : ''}
+      </div>
+      <figure class="cover-view">
+        <div class="proof__page">
+          ${thumb ? `<img src="${thumb}" alt="Preview of your cover">` : ''}
+          <svg viewBox="0 0 ${r(page.widthIn)} ${r(page.heightIn)}" aria-hidden="true">${svg}</svg>
+        </div>
+        <figcaption class="hint">Back cover on the left, spine in the middle, front cover on the right.</figcaption>
+      </figure>
+      ${fit ? legendHtml(specs)
+        : '<p class="hint">Guides are hidden because your cover is not the size KDP expects. Fix the size first (see Must fix), then check again.</p>'}
+    </section>`;
 }
 
 function detailsHtml({ specs, summary, pages, layout: L, file, settings }) {
