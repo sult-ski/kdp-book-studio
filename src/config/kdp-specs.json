@@ -205,7 +205,7 @@
       "contentQuality": "https://kdp.amazon.com/en_US/help/topic/G200952510",
       "bonusContent": "https://kdp.amazon.com/en_US/help/topic/G202018960",
       "freelyAvailableReported": "https://www.kdpcommunity.com/s/question/0D5f400000FHsdMCAT/book-blocked-and-no-i-did-not-steal-content-from-the-web?language=en_US",
-      "reviewsReported": "https://book-business-kdp-amazon.com/en/blog/how-to-get-book-reviews-on-amazon/"
+      "amazonReviewsPolicy": "https://www.amazon.com/gp/help/customer/display.html?nodeId=GLHXEX85MENUE4XF"
     },
     "rules": [
       {
@@ -407,8 +407,8 @@
         "label": "Rewards for reviews",
         "severity": "warn",
         "accuracy": "best-effort",
-        "evidence": "reported",
-        "source": "reviewsReported",
+        "evidence": "official",
+        "source": "amazonReviewsPolicy",
         "patterns": [
           "\\b(5|five)[- ]star (review|rating)s?\\b",
           "\\bin exchange for (a|an|your)( honest)? review\\b",
@@ -438,8 +438,9 @@
     },
     "structure": {
       "_note": "Rules that look at where things are in the book rather than single phrases.",
-      "chapterHeading": "^\\s*(chapter|part)\\s+(\\d{1,3}|[ivxlc]{1,7}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\\b[^\\n]{0,60}$",
-      "firstChapter": "^\\s*(chapter\\s+(1|one|i)|part\\s+(1|one|i))\\b",
+      "chapterHeading": "^\\s*(chapter|part)\\s+(\\d{1,3}|[ivxlc]{1,7}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\\s*([:.\\-–—]\\s*[^\\n]{0,60})?$",
+      "firstChapter": "^\\s*(chapter\\s+(1|one|i)|part\\s+(1|one|i))\\s*([:.\\-–—]\\s*[^\\n]{0,60})?$",
+      "_headingNote": "A heading is the whole line: \"Chapter 1\", or \"Chapter 1: Title\" / \"Chapter 1 - Title\". A prose line such as \"CHAPTER 1 COVERS THE eighty years...\" (Jays, page 6) is not a heading.",
       "tocPageMinHeadings": 3,
       "runningHeadGap": 2,
       "_runningHeadGapNote": "A chapter heading seen again within this many pages is a running head, not a repeated chapter.",

@@ -66,7 +66,7 @@ $('settings').addEventListener('submit', async (e) => {
     if (data.type === 'progress') showProgress(data.done, data.total);
     else if (data.type === 'thumb') thumbs.set(data.page, URL.createObjectURL(data.blob));
     else if (data.type === 'result') {
-      renderReport($('result'), { specs, summary: data.summary, issues: data.issues, pages: data.pages, thumbs, file, settings });
+      renderReport($('result'), { specs, summary: data.summary, issues: data.issues, pages: data.pages, notChecked: data.notChecked ?? [], thumbs, file, settings });
       done();
     } else if (data.type === 'error') { showMessage(data.message); done(); }
   };

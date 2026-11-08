@@ -23,13 +23,36 @@ export function runStructureRules(specs, pages) {
   return [...bonusIssues(st, body, pages.length, base), ...duplicateIssues(st, pages, base), ...repeatedHeadingIssues(st, body, headingRe, base)];
 }
 
+/** First page with a "Chapter 1" / "Part One" heading (table-of-contents pages skipped), or null. */
+function findFirstChapter(st, pages) {
+  const headingRe = new RegExp(st.chapterHeading, 'imu');
+  const firstRe = new RegExp(st.firstChapter, 'imu');
+  for (const p of pages) {
+    const ls = lines(p.text);
+    if (ls.filter((l) => headingRe.test(l) || DOT_LEADER.test(l)).length >= st.tocPageMinHeadings) continue;
+    if (ls.some((l) => firstRe.test(l))) return p.page;
+  }
+  return null;
+}
+
+/**
+ * Structure checks that couldn't run on this book, for the report's "Not checked yet" list.
+ * @returns {string[]}
+ */
+export function structureNotChecked(specs, pages) {
+  const out = [];
+  if (findFirstChapter(specs.content.structure, pages) == null) {
+    out.push('Bonus content position: we found no "Chapter 1" heading, so we couldn\'t tell whether previews or bonus material come before your main text. KDP requires bonus content at the end of the book.');
+  }
+  return out;
+}
+
 function bonusIssues(st, body, total, base) {
   const b = st.bonus;
-  const firstRe = new RegExp(st.firstChapter, 'imu');
   const markerRe = (list) => new RegExp(`(?<!\\w)(${list.map(escapeRe).join('|')})(?!\\w)`, 'iu');
   const anyMarker = markerRe(b.markers);
   const frontMarker = markerRe(b.markers.filter((m) => !b.backOnly.includes(m)));
-  const firstChapter = body.find((pl) => pl.lines.some((l) => firstRe.test(l)))?.page ?? null;
+  const firstChapter = findFirstChapter(st, body.map((pl) => ({ page: pl.page, text: pl.lines.join('\n') })));
   // A marker counts only as a heading: within the first few lines of the page.
   const markerLine = (pl, re) => pl.lines.slice(0, b.headingLines).find((l) => re.test(l) && !DOT_LEADER.test(l));
   const issues = [];

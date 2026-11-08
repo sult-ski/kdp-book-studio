@@ -63,6 +63,21 @@ await test('no recognisable Chapter 1: bonus position is not judged', () => {
   assert.deepEqual(rules(['Sneak Peek\n' + PROSE, PROSE]), []);
 });
 
+await test('a prose line starting "CHAPTER 1 COVERS THE…" (real book) is not a Chapter 1 heading', () => {
+  const r = rules(['Sneak Peek\n' + PROSE, 'CHAPTER 1 COVERS THE eighty years before the modern story', PROSE]);
+  assert.deepEqual(only(r, 'content.bonusFront'), []);
+});
+
+await test('no Chapter 1 heading: preflight lists bonus position under "Not checked yet"; with one, nothing', async () => {
+  const without = await preflight(specs, await makeContentBook([{ lines: [PROSE] }]), S, env);
+  assert.equal(without.notChecked.length, 1);
+  assert.match(without.notChecked[0], /Bonus content position/);
+  const withCh = await preflight(specs, await makeContentBook([{ lines: ['Chapter 1', PROSE] }]), S, env);
+  assert.deepEqual(withCh.notChecked, []);
+  const off = await preflight(specs, await makeContentBook([{ lines: [PROSE] }]), { ...S, deepContent: false }, env);
+  assert.deepEqual(off.notChecked, []); // deep check off: nothing claimed either way
+});
+
 await test('bonus content over ~10% of the book: one whole-book warning; under 10%: nothing', () => {
   const book = (n, bonusFrom) => Array.from({ length: n }, (_, k) =>
     k === 0 ? 'Chapter 1\n' + PROSE : k + 1 === bonusFrom ? 'Bonus Story\n' + PROSE : PROSE);
@@ -119,13 +134,16 @@ await test('redirect to finish the book: Worth checking', async () => {
   assert.equal(i.source, specs.content.sources.contentQuality);
 });
 
-await test('incentivised reviews flagged; a polite review request is not', async () => {
+await test('incentivised reviews flagged (official source: Amazon Community Guidelines); a polite request is not', async () => {
   const issues = await run([
     { lines: ['Leave a review and I will send you a $5 gift card.'] },
     { lines: ['Please leave a 5-star review on Amazon!'] },
     { lines: ['If you enjoyed this book, please consider leaving an honest review.'] },
   ]);
-  assert.deepEqual(only(issues, 'content.incentivisedReviews').map((i) => i.page), [1, 2]);
+  const r = only(issues, 'content.incentivisedReviews');
+  assert.deepEqual(r.map((i) => i.page), [1, 2]);
+  assert.equal(r[0].evidence, 'official');
+  assert.equal(r[0].source, 'https://www.amazon.com/gp/help/customer/display.html?nodeId=GLHXEX85MENUE4XF');
 });
 
 await test('lyrics credit: Good to know; an epigraph with attribution is not flagged', async () => {

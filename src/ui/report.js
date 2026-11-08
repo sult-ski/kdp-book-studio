@@ -261,7 +261,11 @@ function shortMessage(message) {
   return (m ? m[0] : message).replace(/\.$/, '');
 }
 
-function detailsHtml({ specs, summary, file, settings }) {
+function detailsHtml({ specs, summary, file, settings, notChecked = [] }) {
+  const notCheckedHtml = notChecked.length ? `
+        <h3>Not checked yet</h3>
+        <p>We couldn't run these checks on this book:</p>
+        <ul class="selfcheck">${notChecked.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : '';
   const ink = specs.pageCount.inkPaperTypes[settings.inkPaper] ?? settings.inkPaper;
   const [tw, th] = settings.trim.split('x');
   const range = summary.allowedRange ? `${summary.allowedRange[0]} to ${summary.allowedRange[1]} pages` : 'not available for this trim';
@@ -286,12 +290,12 @@ function detailsHtml({ specs, summary, file, settings }) {
           <thead><tr><th scope="col">Size</th><th scope="col">Pages</th></tr></thead><tbody>${rows}</tbody></table>
         <h3>Check these yourself</h3>
         <p>KDP asks for files without these, but they can't be detected reliably:</p>
-        <ul class="selfcheck">${NOT_SUPPORTED.map((t) => `<li>${t}</li>`).join('')}</ul>
+        <ul class="selfcheck">${NOT_SUPPORTED.map((t) => `<li>${t}</li>`).join('')}</ul>${notCheckedHtml}
       </div>
     </details>`;
 }
 
-function saveReport({ specs, summary, issues, file, settings }, counts) {
+function saveReport({ specs, summary, issues, file, settings, notChecked = [] }, counts) {
   const report = {
     tool: 'KDP Book Studio interior preflight',
     generatedAt: new Date().toISOString(),
@@ -303,6 +307,7 @@ function saveReport({ specs, summary, issues, file, settings }, counts) {
     expectedPageSizeIn: summary.expected,
     allowedPageCount: summary.allowedRange,
     issues,
+    notChecked,
   };
   const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a');

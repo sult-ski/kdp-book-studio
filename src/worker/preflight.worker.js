@@ -97,7 +97,7 @@ self.onmessage = async ({ data: { mode = 'interior', bytes, settings } }) => {
         onPage: onPage(THUMB_WIDTH_PX),
       });
     if (result.error) self.postMessage({ type: 'error', message: result.error });
-    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues, pages: result.pages, layout: result.layout });
+    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues, pages: result.pages, layout: result.layout, notChecked: result.notChecked });
   } catch (e) {
     console.error(e);
     self.postMessage({ type: 'error', message: 'Something went wrong while checking this file. Please try again, or try re-exporting the PDF.' });

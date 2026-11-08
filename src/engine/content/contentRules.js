@@ -58,7 +58,7 @@ const WORDING = {
   },
   incentivisedReviews: {
     what: 'This page seems to offer a reward for a review, or ask for a specific star rating.',
-    why: 'Amazon does not allow reviews in exchange for gifts, money or free products, or asking for a particular rating. A plain "please leave a review" is fine.',
+    why: 'Amazon\'s Community Guidelines don\'t allow reviews in exchange for compensation, such as gift cards, free products, payments or refunds. Asking for a specific star rating is flagged too, because it can read as pressure. A plain "please leave a review" is fine.',
     fix: 'Change it to a neutral request, e.g. "If you enjoyed this book, please consider leaving an honest review."',
   },
   lyricsQuotes: {

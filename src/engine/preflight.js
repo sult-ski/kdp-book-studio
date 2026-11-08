@@ -15,6 +15,7 @@ import { sourceUrl } from './specs.js';
 import { pageLayout } from './layout.js';
 import { extractPageText } from './content/extractText.js';
 import { runContentRules } from './content/contentRules.js';
+import { structureNotChecked } from './content/contentStructure.js';
 
 /**
  * @param {object} specs
@@ -81,13 +82,18 @@ export async function preflight(specs, bytes, settings, { pdfjs, docOptions = {}
   }
   onProgress({ done: pdf.pageCount, total: pdf.pageCount });
   issues.push(...checkBlankPages(specs, blank));
-  if (settings.deepContent) issues.push(...runContentRules(specs, texts));
+  // Checks that couldn't run on this book; the report lists them under "Not checked yet".
+  const notChecked = [];
+  if (settings.deepContent) {
+    issues.push(...runContentRules(specs, texts));
+    notChecked.push(...structureNotChecked(specs, texts));
+  }
 
   if (failedPages.length) {
     issues.push(marginsUnchecked(source,
       `We couldn't render page${failedPages.length === 1 ? '' : 's'} ${formatPageList(failedPages)}, so ${failedPages.length === 1 ? 'its' : 'their'} margins and images were not checked.`));
   }
-  return { summary, issues: sortIssues(issues), pages };
+  return { summary, issues: sortIssues(issues), pages, notChecked };
 }
 
 function marginsUnchecked(source, message) {
