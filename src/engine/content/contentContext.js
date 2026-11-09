@@ -16,7 +16,7 @@ export function contentContext(specs, raw = {}) {
   const contexts = (raw.contexts ?? []).filter((id) => c.contexts[id]);
   const m = raw.metadata ?? {};
   const clean = (v) => (typeof v === 'string' ? v.trim() : '');
-  return { genre, audience, contexts, metadata: { title: clean(m.title), author: clean(m.author), isbn: clean(m.isbn), publisher: clean(m.publisher) } };
+  return { genre, audience, contexts, metadata: { title: clean(m.title), author: clean(m.author), isbn: clean(m.isbn), publisher: clean(m.publisher), modeledOn: clean(m.modeledOn) } };
 }
 
 /** Applies context overrides: "off" removes the issue, a severity replaces it (only ever lowers it). */
@@ -145,7 +145,7 @@ function metadataIssues(specs, pages, ctx) {
       ...(r.reportedSource && { reportedSource: { url: specs.content.sources[r.reportedSource.source], evidence: r.reportedSource.evidence, lastVerified: r.reportedSource.lastVerified } }),
     });
   };
-  const { title, author, isbn, publisher } = ctx.metadata;
+  const { title, author, isbn, publisher, modeledOn } = ctx.metadata;
   const front = norm(pages.slice(0, md.searchPages).map((p) => p.text).join('\n'));
   const frontTight = front.replace(/ /g, '');
   // Letter-spaced title pages ("J A Y ' S  O U T") come out of the PDF with a space between every letter.
@@ -212,6 +212,22 @@ function metadataIssues(specs, pages, ctx) {
       fix: 'Change the line to your own name or imprint, e.g. "Published by Jane Doe" or "Independently published", then export the PDF again.',
     });
     break;
+  }
+  if (title && modeledOn) {
+    const r = md.modeledOnTitle;
+    const stop = new Set(r.stopwords);
+    const words = (t) => new Set(norm(t).split(' ').filter((w) => w && !stop.has(w)));
+    const [ours, theirs] = [words(title), words(modeledOn)];
+    const shared = [...ours].filter((w) => theirs.has(w));
+    const overlap = ours.size && theirs.size ? shared.length / Math.min(ours.size, theirs.size) : 0;
+    if (overlap >= r.minOverlap) {
+      const pct = Math.round(overlap * 100);
+      add('modeledOnTitle', {
+        measured: `${pct}% of title words shared with "${modeledOn}" (${shared.join(', ')})`, required: `under ${Math.round(r.minOverlap * 100)}% shared title words`,
+        message: `Your title ("${title}") shares ${pct}% of its main words with "${modeledOn}". KDP's Metadata Guidelines don't allow misleading titles, and a title too close to an existing book can be flagged as misleading.`,
+        fix: "Make your title and subtitle clearly your own. Avoid copying the other book's key words, and describe what your book actually covers.",
+      });
+    }
   }
   if (ctx.contexts.includes('pdAnnotated') && title) {
     const r = md.pdTitleLabel;

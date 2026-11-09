@@ -3,6 +3,7 @@
 // carrying the first matched snippet. No DOM.
 
 import { runStructureRules } from './contentStructure.js';
+import { runQuoteRules } from './contentQuotes.js';
 import { contentContext, applyContextOverrides, runContextRules } from './contentContext.js';
 
 // Plain-English wording per rule. Spec values (phrases, severity, sources) stay in the config.
@@ -24,8 +25,8 @@ const WORDING = {
   },
   storeLinks: {
     what: 'This page links to or prints the web address of another book store.',
-    why: 'KDP does not allow links to commercial ebook stores other than Amazon.',
-    fix: 'Remove the store link or web address, or replace it with your Amazon book page, then export the PDF again.',
+    why: "KDP's content guidelines don't allow ebook links to other stores. We found no case of a paperback blocked only for a printed link, so this is worth checking rather than a must-fix.",
+    fix: 'Consider removing the store link or web address, or replace it with your Amazon book page, then export the PDF again.',
   },
   storeMentions: {
     what: 'This page says the book is available from another store.',
@@ -168,6 +169,10 @@ export function runContentRules(specs, pages, settings) {
   }
 
   kept.push(...runStructureRules(specs, pages));
+  const quotes = runQuoteRules(specs, pages);
+  const quotePages = new Set(quotes.map((i) => i.page));
+  kept.splice(0, kept.length, ...kept.filter((i) => i.groupKey !== 'lyricsQuotes' || !quotePages.has(i.page))); // the broader quote rule covers lyric credits
+  kept.push(...quotes);
   kept.push(...runContextRules(specs, pages, ctx));
   const final = applyContextOverrides(specs, kept, ctx);
 

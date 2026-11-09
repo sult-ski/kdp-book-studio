@@ -277,7 +277,7 @@
       {
         "id": "storeLinks",
         "label": "Link to another ebook store",
-        "severity": "fail",
+        "severity": "warn",
         "accuracy": "verified",
         "evidence": "official",
         "source": "contentQuality",
@@ -459,7 +459,7 @@
         "pdAnnotated": { "label": "Annotated, translated or illustrated public-domain edition", "overrides": { "gutenbergMention": "info" } },
         "aiThemed": { "label": "Book about AI or chatbots", "overrides": { "aiLeftovers": "info" } },
         "typography": { "label": "Book about typography or design", "overrides": { "placeholder": "warn" } },
-        "hymnal": { "label": "Hymnal, songbook or liturgy", "overrides": { "lyricsQuotes": "off", "duplicate": "off", "repeatedHeading": "off" } }
+        "hymnal": { "label": "Hymnal, songbook or liturgy", "overrides": { "lyricsQuotes": "off", "quotedMaterial": "off", "duplicate": "off", "repeatedHeading": "off" } }
       },
       "_overridesNote": "Typography only lowers placeholder text to a warning: KDP's rule has no exception, so a specimen 'Lorem ipsum' can still be rejected. Gutenberg licence/header text stays Must fix in every context."
     },
@@ -490,6 +490,7 @@
       "_searchNote": "Title and author are looked for on the first pages (title page, copyright page), where KDP reviewers look.",
       "titleMissing": { "severity": "warn", "accuracy": "best-effort" },
       "authorMissing": { "severity": "warn", "accuracy": "best-effort" },
+      "modeledOnTitle": { "severity": "warn", "accuracy": "best-effort", "minOverlap": 0.6, "stopwords": ["a", "an", "the", "and", "or", "of", "to", "in", "on", "for", "with", "by", "from", "at", "as", "is", "your", "my", "our", "how", "what", "why", "you", "i", "it", "that", "this", "be", "into", "vs", "versus"], "_note": "D5: the author names a book they modeled theirs on. Overlap = shared title and subtitle words (stopwords ignored) divided by the word count of the shorter title." },
       "isbnMismatch": { "severity": "fail", "accuracy": "verified", "evidence": "both", "sourceLabel": "KDP Metadata Guidelines + reported rejection", "reportedSource": { "source": "isbnMismatchReported", "evidence": "reported", "lastVerified": "2026-11-08" }, "_note": "Owner decision 2026-11-08: Must fix. Only runs when an ISBN was entered; digits compared, ISBN-10 and -13 treated as equal." },
       "isbnInvalid": { "severity": "warn", "accuracy": "verified" },
       "publisherBrand": { "severity": "warn", "accuracy": "verified" },
@@ -498,6 +499,12 @@
       "brandPattern": "\\b(amazon|kindle|kdp|kindle direct publishing|createspace)\\b",
       "publisherLinePattern": "^.{0,40}\\bpublished by\\b.{0,60}\\b(amazon|kindle|kdp|kindle direct publishing)\\b.*$",
       "_severityNote": "Owner decisions 2026-11-08: ISBN mismatch is Must fix; Amazon/Kindle/KDP in the publisher field or a Published by line stays Worth checking; title/author not found stays Worth checking."
+    },
+    "quotedMaterial": {
+      "severity": "warn", "accuracy": "best-effort", "evidence": "official", "source": "contentGuidelines",
+      "minQuoteWords": 40, "maxQuoteWords": 600, "minAttributed": 5, "minAttributedQuoteWords": 12,
+      "lyricsPhrases": ["lyrics"],
+      "_note": "D5: copyright is the real risk (quotes, lyrics, copied text). A page is flagged for: a quotation of at least minQuoteWords words; any page with a lyrics mention; or, when the book has at least minAttributed attributed quotes (a closing quote followed by a dash and a name, or 'said/wrote Name' after a quote of at least minAttributedQuoteWords words, so ordinary dialogue tags don't count), every page that has one."
     },
     "structure": {
       "_note": "Rules that look at where things are in the book rather than single phrases.",

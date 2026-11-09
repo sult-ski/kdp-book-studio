@@ -28,7 +28,7 @@ const CONTENT_TITLES = {
   'content.aiDisclosure': 'Reminder: disclose AI-generated content', 'content.newsletterLinks': 'Newsletter or sign-up link',
   'content.freelyAvailable': 'Text that may be free elsewhere', 'content.companionGuide': 'Looks like a summary or companion guide',
   'content.redirect': 'Sends readers elsewhere for the content', 'content.incentivisedReviews': 'Reward or star rating asked for reviews',
-  'content.lyricsQuotes': 'Song lyrics credited', 'content.bonusFront': 'Bonus content before Chapter 1',
+  'content.lyricsQuotes': 'Song lyrics credited', 'content.quotedMaterial': 'Quoted material: check permission', 'content.modeledOnTitle': 'Title very close to another book', 'content.bonusFront': 'Bonus content before Chapter 1',
   'content.bonusShare': 'A lot of bonus content', 'content.duplicate': 'Repeated passage',
   'content.repeatedHeading': 'Chapter heading used twice', 'content.taboo': 'Explicit scene with a restricted theme',
   'content.childrenExplicit': "Adult words in a children's book", 'content.genreAudience': "Erotica set for children",

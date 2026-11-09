@@ -98,7 +98,7 @@ await test('store link annotation (kobo.com) and a printed books2read address: M
   ]);
   const s = issues.filter((i) => i.checkId === 'content.storeLinks');
   assert.deepEqual(s.map((i) => i.page), [1, 2]);
-  assert.ok(s.every((i) => i.severity === 'fail'));
+  assert.ok(s.every((i) => i.severity === 'warn'));
   assert.match(s[0].snippet, /kobo\.com/);
 });
 

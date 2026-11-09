@@ -127,6 +127,6 @@ function readContentSettings() {
     genre: $('genre').value,
     audience: $('audience').value,
     contexts: [...document.querySelectorAll('#contexts input:checked')].map((el) => el.value),
-    metadata: { title: v('md-title'), author: v('md-author'), isbn: v('md-isbn'), publisher: v('md-publisher') },
+    metadata: { title: v('md-title'), author: v('md-author'), isbn: v('md-isbn'), publisher: v('md-publisher'), modeledOn: v('md-modeled') },
   };
 }
