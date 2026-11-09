@@ -294,11 +294,12 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .notice p { margin: 0; }
 
 /* ---------- Report ---------- */
-.report { display: grid; gap: 2rem; }
+.report { display: grid; gap: 1.75rem; }
 
 .verdict { padding: 1.5rem 1.25rem; }
 @media (min-width: 30rem) { .verdict { padding: 1.75rem; } }
-.verdict__head { display: flex; gap: 1rem; align-items: flex-start; }
+.verdict__head { display: flex; gap: .9rem; align-items: flex-start; }
+@media (max-width: 29.99rem) { .verdict__icon { width: 2.5rem !important; height: 2.5rem !important; padding: .5rem !important; } }
 .verdict__icon {
   flex: none; width: 3rem; height: 3rem; padding: .6rem; border-radius: 50%;
   fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
@@ -307,12 +308,15 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .verdict[data-state="fail"] .verdict__icon { stroke: var(--red); background: var(--red-wash); }
 .verdict h2 { font-size: clamp(1.5rem, 6vw, 2rem); font-weight: 720; letter-spacing: -.025em; outline: none; margin-top: .3rem; }
 .verdict[data-state="pass"] h2 { color: var(--green); }
-.verdict[data-state="fail"] h2 { color: var(--red); }
+.verdict[data-state="fail"] h2 { color: var(--text); }
+.verdict { border-top: 4px solid var(--line-strong); }
+.verdict[data-state="pass"] { border-top-color: var(--green); }
+.verdict[data-state="fail"] { border-top-color: var(--red); }
 .verdict__lead { margin: .5rem 0 0; color: var(--muted); max-width: 36rem; }
 
 .counts { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
 .count a, .count span {
-  display: flex; flex-direction: column; gap: .1rem; height: 100%; padding: .7rem .8rem;
+  display: flex; flex-direction: column; gap: .1rem; height: 100%; padding: .75rem .8rem; min-height: 4.25rem;
   border-radius: var(--radius); font-size: .8125rem; color: var(--muted); text-decoration: none; line-height: 1.3;
   background: var(--subtle); border: 1px solid transparent;
 }
@@ -324,7 +328,8 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .count[data-sev="warn"] strong { color: var(--amber); }
 .count[data-sev="info"][data-zero="false"] a { background: var(--blue-wash); }
 .count[data-sev="info"] strong { color: var(--blue); }
-.count[data-zero="true"] strong { color: var(--line-strong); }
+.count[data-zero="true"] strong { color: var(--muted); font-weight: 600; }
+.count[data-zero="true"] a, .count[data-zero="true"] span { background: transparent; border-color: var(--line); }
 
 .verdict__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .verdict__actions .hint { margin: 0; }
@@ -336,12 +341,15 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .group[data-sev="fail"] .group__icon { stroke: var(--red); }
 .group[data-sev="warn"] .group__icon { stroke: var(--amber); }
 .group[data-sev="info"] .group__icon { stroke: var(--blue); }
+.group[data-sev="fail"] .group__count { color: var(--red); background: var(--red-wash); border-color: transparent; }
+.group[data-sev="warn"] .group__count { color: var(--amber); background: var(--amber-wash); border-color: transparent; }
+.group[data-sev="info"] .group__count { color: var(--blue); background: var(--blue-wash); border-color: transparent; }
 .group__count {
   min-width: 1.6rem; padding: 0 .45rem; border-radius: 999px; text-align: center;
   font-size: .8125rem; font-weight: 650; line-height: 1.6rem; font-variant-numeric: tabular-nums;
   color: var(--muted); background: var(--surface); border: 1px solid var(--line);
 }
-.group__hint { margin: .35rem 0 .9rem; font-size: .9375rem; color: var(--muted); }
+.group__hint { margin: .3rem 0 .75rem; font-size: .9375rem; color: var(--muted); }
 .group--fold > summary { list-style: none; cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; }
 .group--fold > summary::-webkit-details-marker { display: none; }
 .group--fold .group__title { flex: 1; }
@@ -360,7 +368,7 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .issue > summary {
   display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "icon title chev" "icon where chev";
   align-items: center; column-gap: .75rem; row-gap: .15rem;
-  min-height: 3.5rem; padding: .85rem 1rem; cursor: pointer; list-style: none;
+  min-height: 3.5rem; padding: .8rem 1rem; cursor: pointer; list-style: none;
 }
 .issue > summary::-webkit-details-marker { display: none; }
 .issue > summary:hover { background: var(--subtle); }
