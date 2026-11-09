@@ -3,6 +3,7 @@ dist/
 .playwright-mcp/
 tests/fixtures/out/
 public/pdfjs/
+public/ocr/
 .vercel/
 
 .vercel

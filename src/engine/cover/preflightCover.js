@@ -8,6 +8,7 @@ import { checkCoverSize, checkCoverPages } from './checks/coverSize.js';
 import { checkSpineText } from './checks/spineText.js';
 import { checkCoverZones } from './checks/zones.js';
 import { checkBarcodeArea } from './checks/barcode.js';
+import { panelsWithoutText, readPanels } from './ocr.js';
 import { checkFonts } from '../checks/fonts.js';
 import { checkPageImages } from '../checks/imageDpi.js';
 import { checkPageFontSize } from '../checks/fontSize.js';
@@ -39,10 +40,12 @@ const forCover = (specs) => ({
  * @param {object} specs
  * @param {Uint8Array} bytes
  * @param {{ trim:string, inkPaper:string, pages:number, toleranceIn?:number }} settings
- * @param {{ pdfjs:object, docOptions?:object, onPage?:Function }} env
+ * @param {{ pdfjs:object, docOptions?:object, onPage?:Function, ocr?:Function, onStatus?:Function }} env
  *   onPage({ page, render, issues }) is called with the rendered cover (the worker makes its thumbnail)
+ *   ocr(bmpBytes) reads words from a picture (Tesseract.js); without it, panels with no live text aren't read
+ *   onStatus(text) reports a slow step to the user (reading the cover picture)
  */
-export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions = {}, onPage = null }) {
+export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions = {}, onPage = null, ocr = null, onStatus = null }) {
   const pdf = await loadPdf(bytes);
   if (pdf.error) return { error: pdf.error };
   const L = coverLayout(specs, settings);
@@ -57,6 +60,8 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
   ];
 
   const doc = await openWithPdfjs(pdfjs, bytes, docOptions);
+  let ocrWords = [];
+  let ocrPanels = [];
   try {
     const { images, render } = await inspectPage(pdfjs, doc, 1, { dpi: specs.app.renderDpi, render: true });
     issues.push(...withCoverFix([...checkPageImages(cs, first, images), ...checkPageFontSize(cs, first, render)]));
@@ -67,7 +72,17 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
     // Zones only make sense on a cover of the right size; otherwise the size issue explains what to fix.
     const sizeOk = !issues.some((i) => i.checkId === 'coverSize' && i.severity === 'fail');
     if (sizeOk) {
-      issues.push(...checkCoverZones(specs, textBoxes, L, { toleranceIn: 1 / render.dpi }));
+      // Panels with no live text (a flattened cover): read the words in the picture and check them the same way.
+      const panels = ocr ? panelsWithoutText(textBoxes, L) : [];
+      if (panels.length) {
+        onStatus?.('Reading the text in your cover picture…');
+        const o = specs.cover.ocr;
+        const { render: big } = await inspectPage(pdfjs, doc, 1, { dpi: o.dpi, render: true });
+        const read = await readPanels(ocr, big, L, first, panels, o);
+        ocrWords = read.filter((w) => w.confidence >= o.minConfidence);
+        ocrPanels = panels;
+      }
+      issues.push(...checkCoverZones(specs, [...textBoxes, ...ocrWords], L, { toleranceIn: 1 / render.dpi }));
       issues.push(...checkBarcodeArea(specs, render, L));
     }
     if (onPage) await onPage({ page: first, render, issues });
@@ -78,6 +93,7 @@ export async function preflightCover(specs, bytes, settings, { pdfjs, docOptions
   return {
     issues: sortIssues(issues),
     layout: L,
+    ocr: { panels: ocrPanels, words: ocrWords.map(({ str, x, y, width, height, confidence }) => ({ str, x, y, width, height, confidence })) },
     pages: [{ number: 1, side: 'right', widthIn: first.widthIn, heightIn: first.heightIn, layout: null }],
     summary: { pageCount: pdf.pageCount, sizeBytes: pdf.sizeBytes, expected: { width: L.widthIn, height: L.heightIn } },
   };

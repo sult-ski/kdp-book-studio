@@ -42,7 +42,7 @@ export async function makeDoc(n = 24) {
 // EB Garamond (SIL Open Font License 1.1), from the @fontsource/eb-garamond dev dependency.
 // @fontsource only ships WOFF; pdf-lib would embed those bytes as-is (not a valid PDF font file),
 // so convert to a plain TrueType file first, like a font installed on an author's computer.
-const GARAMOND = woffToTtf(readFileSync(fileURLToPath(new URL(
+export const GARAMOND = woffToTtf(readFileSync(fileURLToPath(new URL(
   '../../node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff', import.meta.url))));
 
 /** WOFF 1.0 -> TTF/OTF: unpack the (zlib-compressed) tables into a plain sfnt file. */

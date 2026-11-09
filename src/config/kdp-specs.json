@@ -155,9 +155,21 @@
     },
     "safeArea": {
       "textMarginIn": 0.25,
-      "_note": "Text and important images at least this far inside the trim on the outside edges.",
-      "source": "submission",
+      "crossToleranceIn": 0.02,
+      "_note": "Text and important images at least this far inside the trim on the outside edges. crossToleranceIn is OUR rule, not KDP's: text is Must fix only when its box crosses the safe line by more than this, so text touching or sitting on the line is not flagged. Set by the owner from real KDP uploads (Nov 2026): a cover whose title touched the safe lines was accepted; a pen name crossing the bottom safe line is what KDP's previewer flags.",
+      "source": "cover",
+      "alsoSource": "submission",
+      "ownerEvidence": "Owner's real KDP cover uploads (The Audacity to Upgrade, TATU), Nov 2026",
+      "crossToleranceDecided": "2026-11-09",
       "lastVerified": "2026-11-06"
+    },
+    "ocr": {
+      "dpi": 100,
+      "mustFixMinConfidence": 80,
+      "minConfidence": 50,
+      "minChars": 2,
+      "_note": "OUR settings, not KDP's. When a back or front panel has no real (live) PDF text, its picture is read with Tesseract.js on the device and the same safe-line rule is applied to each word it finds. Words read with confidence >= mustFixMinConfidence can be Must fix; between minConfidence and that, only Worth checking; below minConfidence (or shorter than minChars letters/digits) they are treated as artwork and ignored. Each panel is read twice (as is, and inverted to catch light text on dark art) at dpi; tested on the owner's real covers, 100 DPI read the pen name best and 4x faster than 200. The spine is not read (rotated text), and very large or tightly condensed display lettering may not be read.",
+      "decided": "2026-11-09"
     },
     "spineText": {
       "minPages": 79,

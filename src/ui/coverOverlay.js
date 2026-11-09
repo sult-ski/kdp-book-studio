@@ -7,10 +7,11 @@ const r = (n) => Math.round(n * 1000) / 1000;
  * @param {object} L coverLayout() result (the size KDP expects)
  * @param {{ widthIn:number, heightIn:number }} page the uploaded cover's real size
  * @param {Array<object>} issues issues to outline (those with a bbox)
- * @param {{ guides?:boolean }} opts guides=false draws only the outlines (cover size is wrong, so guides would mislead)
+ * @param {{ guides?:boolean, words?:Array<{x,y,width,height}> }} opts guides=false draws only the outlines (cover size is wrong,
+ *   so guides would mislead); words = boxes read from the cover picture (OCR), drawn faintly with the guides
  * @returns {string} SVG child elements, viewBox "0 0 page.widthIn page.heightIn"
  */
-export function coverOverlaySvg(L, page, issues, { guides = true } = {}) {
+export function coverOverlaySvg(L, page, issues, { guides = true, words = [] } = {}) {
   const W = page.widthIn;
   const H = page.heightIn;
   let out = '';
@@ -29,6 +30,7 @@ export function coverOverlaySvg(L, page, issues, { guides = true } = {}) {
     out += box(barcode, 'ov-barcode');
     out += L.folds.map((f) => `<line class="ov-trim" x1="${r(f.x * sx)}" y1="${r(b * sy)}" x2="${r(f.x * sx)}" y2="${r(H - b * sy)}"/>`).join('');
     out += `<rect class="ov-trim" x="${r(b * sx)}" y="${r(b * sy)}" width="${r(W - 2 * b * sx)}" height="${r(H - 2 * b * sy)}"/>`;
+    out += words.map((w) => `<rect class="ov-word" x="${r(w.x)}" y="${r(w.y)}" width="${r(w.width)}" height="${r(w.height)}"/>`).join('');
   }
   // Outlines stay visible at any preview size: sized relative to a 9" tall cover.
   const k = H / 9;

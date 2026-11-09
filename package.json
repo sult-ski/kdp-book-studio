@@ -11,13 +11,15 @@
     "prebuild": "npm run assets",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tests/m1.test.mjs && node tests/m2.test.mjs && node tests/m3.test.mjs && node tests/m4.test.mjs && node tests/m5.test.mjs && node tests/m6.test.mjs && node tests/m7.test.mjs && node tests/c1.test.mjs && node tests/c2.test.mjs && node tests/c3.test.mjs && node tests/c4.test.mjs && node tests/c5.test.mjs && node tests/d1.test.mjs && node tests/d2.test.mjs && node tests/d3.test.mjs && node tests/d5.test.mjs",
+    "test": "node tests/m1.test.mjs && node tests/m2.test.mjs && node tests/m3.test.mjs && node tests/m4.test.mjs && node tests/m5.test.mjs && node tests/m6.test.mjs && node tests/m7.test.mjs && node tests/c1.test.mjs && node tests/c2.test.mjs && node tests/c3.test.mjs && node tests/c4.test.mjs && node tests/c5.test.mjs && node tests/c6.test.mjs && node tests/d1.test.mjs && node tests/d2.test.mjs && node tests/d3.test.mjs && node tests/d5.test.mjs",
     "fixtures": "node tests/fixtures/make-fixtures.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
+    "@tesseract.js-data/eng": "^1.0.0",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^6.5.438"
+    "pdfjs-dist": "^6.5.438",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@fontsource/eb-garamond": "^5.3.0",

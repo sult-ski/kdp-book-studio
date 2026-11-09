@@ -1,7 +1,8 @@
 // Cover zones: text must sit inside the safe area (0.25" inside the trim and the spine folds) on the back and
 // front covers; spine text must stay clear of the fold lines and of the spine's edges.
-// Uses live text positions from pdf.js. Text converted to outlines or drawn inside images can't be told apart
-// from artwork on a full-colour cover, so it isn't checked here (the report says so).
+// Uses live text positions from pdf.js, plus words read by OCR from panels that have no live text (ocr: true,
+// with a confidence). Text only counts as outside the safe area when its box CROSSES the safe line by more than
+// cover.safeArea.crossToleranceIn (our rule): text touching or sitting on the line is fine.
 import { inches } from '../../format.js';
 import { sourceUrl } from '../../specs.js';
 
@@ -17,6 +18,7 @@ const PANEL_NAME = { back: 'back cover', front: 'front cover', spine: 'spine' };
  */
 export function checkCoverZones(specs, textBoxes, L, { toleranceIn: tol }) {
   const safe = specs.cover.safeArea.textMarginIn;
+  const cross = Math.max(tol, specs.cover.safeArea.crossToleranceIn); // how far past the safe line before we flag
   const clear = specs.cover.spineText.clearanceIn;
   const variance = specs.cover.fold.varianceIn;
   const spine = L.rects.spine;
@@ -37,7 +39,7 @@ export function checkCoverZones(specs, textBoxes, L, { toleranceIn: tol }) {
     if (cx >= foldL && cx <= foldR) {
       if (!L.spineText.allowed) continue; // the spine text check reports it
       const v = closest(vertical);
-      if (v.d < safe - tol - EPS) { found.spine.push({ b, ...v }); continue; }
+      if (v.d < safe - cross - EPS) { found.spine.push({ b, ...v }); continue; }
       const over = Math.max(foldL - b.x, x1 - foldR);
       if (over > tol + EPS) { found.fold.push({ b, d: over }); continue; }
       const side = Math.min(b.x - foldL, foldR - x1);
@@ -49,12 +51,17 @@ export function checkCoverZones(specs, textBoxes, L, { toleranceIn: tol }) {
     const foldDist = panel === 'back' ? foldL - x1 : b.x - foldR;
     const outerDist = panel === 'back' ? b.x - p.x : p.x + p.width - x1;
     const c = closest([...vertical, { d: outerDist, edge: 'outside' }, { d: foldDist, edge: 'fold' }]);
-    if (c.d < safe - tol - EPS) found[panel].push({ b, ...c, nearFold: foldDist < variance - tol - EPS });
+    if (c.d < safe - cross - EPS) found[panel].push({ b, ...c, nearFold: foldDist < variance - tol - EPS });
   }
 
   const issues = [];
+  const sure = specs.cover.ocr.mustFixMinConfidence;
   for (const panel of ['back', 'spine', 'front']) {
-    if (found[panel].length) issues.push(safeAreaIssue(specs, panel, found[panel], safe));
+    const hits = found[panel];
+    const unsure = hits.filter((h) => h.b.ocr && h.b.confidence < sure);
+    const firm = hits.filter((h) => !unsure.includes(h));
+    if (firm.length) issues.push(safeAreaIssue(specs, panel, firm, safe, cross));
+    if (unsure.length) issues.push(safeAreaIssue(specs, panel, unsure, safe, cross, { unsure: true }));
   }
   if (found.fold.length) issues.push(foldIssue(specs, found.fold, variance, clear));
   if (found.edge.length) issues.push(edgeIssue(specs, found.edge, variance, clear));
@@ -67,29 +74,34 @@ const EDGE = {
   top: 'the top trim line', bottom: 'the bottom trim line', outside: 'the outside trim line', fold: 'the spine fold',
 };
 
-function safeAreaIssue(specs, panel, hits, safe) {
+function safeAreaIssue(specs, panel, hits, safe, cross, { unsure = false } = {}) {
   const worst = closest(hits);
   const name = PANEL_NAME[panel];
+  const fromImage = hits.some((h) => h.b.ocr);
+  const pic = fromImage ? ' (read from the cover picture)' : '';
   const where = worst.d < 0
     ? (worst.edge === 'fold'
       ? `runs ${inches(-worst.d)} past ${EDGE.fold}, onto the spine`
       : `runs ${inches(-worst.d)} past ${EDGE[worst.edge]}, so part of it will be cut off`)
-    : `sits ${inches(worst.d)} from ${EDGE[worst.edge]}`;
+    : `sits ${inches(worst.d)} from ${EDGE[worst.edge]}, ${inches(safe - worst.d)} past the safe line`;
   const lead = hits.length > 1
-    ? `${hits.length} pieces of text on the ${name} are outside the safe area. The closest, ${quote(worst.b)}, ${where}.`
-    : `Text ${quote(worst.b)} on the ${name} ${where}.`;
+    ? `${hits.length} pieces of text on the ${name}${pic} cross the safe line. The furthest out, ${quote(worst.b)}, ${where}.`
+    : `Text ${quote(worst.b)} on the ${name}${pic} crosses the safe line: it ${where}.`;
+  const doubt = unsure
+    ? ' We read this word from the picture but are not sure it is text (it may be part of the artwork), so check it yourself.'
+    : '';
   const fold = hits.some((h) => h.nearFold)
     ? ' Some of it sits on the fold line, where the cover bends around the spine.' : '';
   return {
-    id: 'cover-safe-area', checkId: 'coverSafeArea', severity: 'fail', page: 1,
+    id: unsure ? 'cover-safe-area-unsure' : 'cover-safe-area', checkId: 'coverSafeArea', severity: unsure ? 'warn' : 'fail', page: 1,
     bbox: union(hits.map((h) => h.b)),
     measured: `${inches(worst.d)} from ${EDGE[worst.edge]}`,
     required: `text at least ${spec(safe)} inside the trim and fold lines`,
-    message: `${lead} KDP needs text at least ${spec(safe)} inside the trim and the spine folds (the safe area), because cutting and folding can shift slightly.${fold}`,
+    message: `${lead} KDP needs text at least ${spec(safe)} inside the trim and the spine folds (the safe area), because cutting and folding can shift slightly. Text touching the safe line is fine; we flag text that crosses it by more than ${spec(cross)}.${fold}${doubt}`,
     fix: `Move the text at least ${spec(safe)} in from the trim and fold lines, then export again. The template from the Cover calculator tab shows the safe area as a dashed blue line.`,
     fixId: 'move-into-safe-area',
-    groupKey: `safe-area-${panel}`,
-    accuracy: 'verified',
+    groupKey: `safe-area-${panel}${unsure ? '-unsure' : ''}`,
+    accuracy: fromImage ? 'best-effort' : 'verified',
     source: sourceUrl(specs, specs.cover.safeArea),
   };
 }

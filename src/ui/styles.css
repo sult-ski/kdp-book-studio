@@ -518,4 +518,6 @@ progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
 .ov-barcode { fill: rgb(255 255 255 / 35%); stroke: var(--accent); stroke-width: 1.5px; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
 .cover-legend { gap: .35rem 1.1rem; }
 .key--mark { border: 2px solid var(--red); border-radius: 3px; }
+.ov-word { fill: rgb(90 63 200 / 12%); stroke: var(--accent); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.key--word { background: rgb(90 63 200 / 12%); border: 1px solid var(--accent); }
 .cover-view .mark { fill: none; }

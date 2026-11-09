@@ -34,6 +34,8 @@ export default {
         // Everything needed to check a book offline: the app, the worker (pdf.js + pdf-lib, ~2.2 MB), the Inter font,
         // pdf.js's standard fonts (unembedded text) and image decoders (JPEG 2000, JBIG2).
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}', 'pdfjs/standard_fonts/*', 'pdfjs/wasm/*'],
+        // OCR files (public/ocr/, ~7 MB) are only needed for covers with text in the picture: cached on first use.
+        globIgnores: ['ocr/**'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         // Character maps (CJK and other CID fonts, ~1.5 MB in ~170 files) are rarely needed:
@@ -42,6 +44,12 @@ export default {
           urlPattern: ({ url }) => url.pathname.startsWith('/pdfjs/cmaps/'),
           handler: 'CacheFirst',
           options: { cacheName: 'pdfjs-cmaps', expiration: { maxEntries: 200 } },
+        }, {
+          // Tesseract.js worker, engine and English model. File names don't change between versions, so the cache
+          // name carries the tesseract.js major version: bump it when upgrading.
+          urlPattern: ({ url }) => url.pathname.startsWith('/ocr/'),
+          handler: 'CacheFirst',
+          options: { cacheName: 'ocr-tesseract-7', expiration: { maxEntries: 10 } },
         }],
       },
     }),

@@ -1,12 +1,13 @@
 // Runs the whole preflight off the main thread, so the page stays responsive on big books.
 // Messages in:  { mode?: 'interior' | 'cover', bytes: Uint8Array, settings }
-// Messages out: { type: 'progress', done, total } | { type: 'thumb', page, blob }
-//             | { type: 'result', summary, issues, pages, layout? } | { type: 'error', message }
+// Messages out: { type: 'progress', done, total } | { type: 'status', text } | { type: 'thumb', page, blob }
+//             | { type: 'result', summary, issues, pages, layout?, ocr? } | { type: 'error', message }
 import * as pdfjs from 'pdfjs-dist';
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import specs from '../config/kdp-specs.json';
 import { preflight } from '../engine/preflight.js';
 import { preflightCover } from '../engine/cover/preflightCover.js';
+import { browserOcr } from './ocr.js';
 
 // We are already in a worker: run pdf.js's parser in this same thread instead of starting another worker.
 globalThis.pdfjsWorker = pdfjsWorker;
@@ -68,6 +69,29 @@ async function thumbnail(render, width = THUMB_WIDTH_PX) {
 
 const assets = new URL(`${import.meta.env.BASE_URL}pdfjs/`, self.location.origin).href;
 
+/** Cover check with OCR started on demand: Tesseract loads only if a panel turns out to have no real text. */
+async function coverWithOcr(bytes, settings, docOptions, onPage) {
+  let engine = null;
+  let tried = false;
+  const ocr = async (image) => {
+    tried = true;
+    engine ??= await browserOcr(specs);
+    return engine.ocr(image);
+  };
+  const onStatus = (text) => self.postMessage({ type: 'status', text });
+  try {
+    return await preflightCover(specs, bytes, settings, { pdfjs, docOptions, onPage, ocr, onStatus });
+  } catch (e) {
+    if (!tried) throw e;
+    // OCR failed (e.g. offline before its files were ever downloaded): check the cover without it.
+    console.error('Reading the cover picture failed; checking without it:', e);
+    const plain = await preflightCover(specs, bytes, settings, { pdfjs, docOptions, onPage });
+    return plain.error ? plain : { ...plain, ocr: { ...plain.ocr, failed: true } };
+  } finally {
+    await engine?.close().catch(() => {});
+  }
+}
+
 self.onmessage = async ({ data: { mode = 'interior', bytes, settings } }) => {
   try {
     const docOptions = {
@@ -89,7 +113,7 @@ self.onmessage = async ({ data: { mode = 'interior', bytes, settings } }) => {
       }
     };
     const result = mode === 'cover'
-      ? await preflightCover(specs, bytes, settings, { pdfjs, docOptions, onPage: onPage(COVER_THUMB_WIDTH_PX) })
+      ? await coverWithOcr(bytes, settings, docOptions, onPage(COVER_THUMB_WIDTH_PX))
       : await preflight(specs, bytes, settings, {
         pdfjs,
         docOptions,
@@ -97,7 +121,7 @@ self.onmessage = async ({ data: { mode = 'interior', bytes, settings } }) => {
         onPage: onPage(THUMB_WIDTH_PX),
       });
     if (result.error) self.postMessage({ type: 'error', message: result.error });
-    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues, pages: result.pages, layout: result.layout, notChecked: result.notChecked });
+    else self.postMessage({ type: 'result', summary: result.summary, issues: result.issues, pages: result.pages, layout: result.layout, notChecked: result.notChecked, ocr: result.ocr });
   } catch (e) {
     console.error(e);
     self.postMessage({ type: 'error', message: 'Something went wrong while checking this file. Please try again, or try re-exporting the PDF.' });

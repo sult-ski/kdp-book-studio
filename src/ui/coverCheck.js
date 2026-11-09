@@ -11,7 +11,7 @@ const $ = (id) => document.getElementById(id);
 const MB = 1e6;
 // Cover rules not checked (or only partly checked). Listed so authors know to check them against the template.
 const NOT_CHECKED_YET = [
-  'Text converted to outlines or drawn into images: only live text is checked against the safe area, fold lines and 7 pt minimum',
+  'Text in the cover picture: when the back or front cover has no real text (for example a flattened Canva export), we read the words in the picture on your device and check them against the safe area. Very large or decorative lettering may not be read, and text in a picture is not checked on the spine or for the 7 pt minimum',
   'Barcode area: we look for text and artwork details there (a plain background is fine), but cannot tell your own barcode from artwork',
 ];
 
@@ -59,7 +59,8 @@ async function run(specs, button) {
   worker = new Worker(new URL('../worker/preflight.worker.js', import.meta.url), { type: 'module' });
   const done = () => { button.disabled = false; };
   worker.onmessage = ({ data }) => {
-    if (data.type === 'thumb') thumbs.set(data.page, URL.createObjectURL(data.blob));
+    if (data.type === 'status') { const l = root.querySelector('.working__label'); if (l) l.textContent = data.text; }
+    else if (data.type === 'thumb') thumbs.set(data.page, URL.createObjectURL(data.blob));
     else if (data.type === 'result') { renderCoverReport(root, { specs, ...data, file, settings }); done(); }
     else if (data.type === 'error') { message(root, data.message); done(); }
   };
@@ -80,14 +81,15 @@ function renderCoverReport(root, data) {
   const groups = groupIssues(issues);
   const counts = Object.fromEntries(['fail', 'warn', 'info'].map((sev) => [sev, groups.filter((g) => g.severity === sev).length]));
   const fit = guidesFit(issues);
-  const overlay = (list) => coverOverlaySvg(data.layout, pages[0], list, { guides: fit });
-  const pageInfo = new Map(pages.map((p) => [p.number, { ...p, caption: 'Your cover', overlay, legend: fit ? legendHtml(specs) : '' }]));
+  const words = data.ocr?.words ?? [];
+  const overlay = (list) => coverOverlaySvg(data.layout, pages[0], list, { guides: fit, words });
+  const pageInfo = new Map(pages.map((p) => [p.number, { ...p, caption: 'Your cover', overlay, legend: fit ? legendHtml(specs, words.length > 0) : '' }]));
   const ctx = { issues, pageInfo, thumbs, specs, prefix: 'cover-', onePageLabel: 'Cover' };
 
   root.innerHTML = `
     <div class="report">
       ${verdictHtml(counts, 'cover', 'cover-')}
-      ${overviewHtml(pages[0], thumbs.get(1), overlay(issues), fit, specs)}
+      ${overviewHtml(pages[0], thumbs.get(1), overlay(issues), fit, specs, data.ocr)}
       ${['fail', 'warn', 'info'].map((sev) => groupHtml(sev, groups.filter((g) => g.severity === sev), ctx)).join('')}
       ${detailsHtml(data)}
     </div>`;
@@ -104,17 +106,24 @@ function renderCoverReport(root, data) {
   report.querySelector('.verdict').scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
 }
 
-const legendHtml = (specs) => `
+const legendHtml = (specs, words = false) => `
   <p class="proofs__legend cover-legend">
     <span class="legend-item"><span class="key key--zone"></span> Bleed, cut off (${specs.cover.size.bleedIn}")</span>
     <span class="legend-item"><span class="key key--fold"></span> Where the spine may fold (&plusmn;${specs.cover.fold.varianceIn}")</span>
     <span class="legend-item"><span class="key key--safe"></span> Safe area for text</span>
     <span class="legend-item"><span class="key key--barcode"></span> Barcode box, keep empty</span>
+    ${words ? '<span class="legend-item"><span class="key key--word"></span> Words read from the picture</span>' : ''}
     <span class="legend-item"><span class="key key--mark"></span> A problem we found</span>
   </p>`;
 
 /** The whole cover with KDP's guides on top, so authors see where each zone falls on their own artwork. */
-function overviewHtml(page, thumb, svg, fit, specs) {
+function overviewHtml(page, thumb, svg, fit, specs, ocr) {
+  const PANEL = { back: 'back cover', front: 'front cover' };
+  const ocrNote = ocr?.failed
+    ? '<p class="hint">We could not read the text in your cover picture this time (the reader needs to download once while you are online). Check the safe area against the guides yourself.</p>'
+    : ocr?.panels?.length
+      ? `<p class="hint">Your ${ocr.panels.map((p) => PANEL[p]).join(' and ')} ${ocr.panels.length > 1 ? 'have' : 'has'} no real text (the words are part of the picture), so we read the words from the picture. Very large or decorative lettering may be missed.</p>`
+      : '';
   const r = (n) => Math.round(n * 1000) / 1000;
   return `
     <section class="card cover-overview" aria-labelledby="cover-overview-title">
@@ -129,8 +138,9 @@ function overviewHtml(page, thumb, svg, fit, specs) {
         </div>
         <figcaption class="hint">Back cover on the left, spine in the middle, front cover on the right.</figcaption>
       </figure>
-      ${fit ? legendHtml(specs)
+      ${fit ? legendHtml(specs, (ocr?.words?.length ?? 0) > 0)
         : '<p class="hint">Guides are hidden because your cover is not the size KDP expects. Fix the size first (see Must fix), then check again.</p>'}
+      ${ocrNote}
     </section>`;
 }
 
