@@ -51,7 +51,7 @@ export default {
           // name carries the tesseract.js major version: bump it when upgrading.
           urlPattern: ({ url }) => url.pathname.startsWith('/ocr/'),
           handler: 'CacheFirst',
-          options: { cacheName: 'ocr-tesseract-7', expiration: { maxEntries: 10 } },
+          options: { cacheName: 'ocr-tesseract-7b', expiration: { maxEntries: 10 } },
         }],
       },
     }),

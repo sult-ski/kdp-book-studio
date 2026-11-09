@@ -12,8 +12,11 @@ export async function browserOcr(specs) {
     corePath: `${base}core/`,
     langPath: `${base}lang/`,
     workerBlobURL: false, // our Content-Security-Policy allows workers from 'self' only, not blob: URLs
-    gzip: true,
+    gzip: false, // eng.traineddata is stored unzipped; the host compresses it on the wire (see the assets script)
     cacheMethod: 'none', // the service worker caches the files; no second copy in IndexedDB
+    // Without a handler Tesseract throws its errors uncaught, killing the whole check. With one, the failed call
+    // still rejects, so the cover is checked without OCR (see coverWithOcr in preflight.worker.js).
+    errorHandler: (e) => console.warn('Text reader (OCR):', e),
   });
   await worker.setParameters(tesseractParams(specs));
   return {

@@ -9,8 +9,10 @@
 // Tesseract.js OCR (public/ocr/), loaded only when a cover panel has no real text:
 //   worker.min.js   Tesseract's worker script, bundled here (the npm package doesn't ship a built one)
 //   core/           the OCR engine (WebAssembly, LSTM-only builds: plain, SIMD and relaxed-SIMD; a device loads one)
-//   lang/           English model (4.0.0_best_int, ~3 MB gzipped)
-import { cpSync, rmSync, mkdirSync } from 'node:fs';
+//   lang/           English model (4.0.0_best_int), stored unzipped (5.2 MB): Tesseract's own in-browser unzip
+//                   needs Node's Buffer and fails, so the host compresses it on the wire instead (~3 MB)
+import { cpSync, rmSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 
@@ -29,7 +31,7 @@ mkdirSync(pub('ocr/lang'), { recursive: true });
 for (const f of ['tesseract-core-lstm.wasm.js', 'tesseract-core-simd-lstm.wasm.js', 'tesseract-core-relaxedsimd-lstm.wasm.js']) {
   cpSync(nm(`tesseract.js-core/${f}`), pub(`ocr/core/${f}`));
 }
-cpSync(nm('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz'), pub('ocr/lang/eng.traineddata.gz'));
+writeFileSync(pub('ocr/lang/eng.traineddata'), gunzipSync(readFileSync(nm('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz'))));
 await build({
   entryPoints: [nm('tesseract.js/src/worker-script/browser/index.js')],
   outfile: pub('ocr/worker.min.js'),
