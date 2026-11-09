@@ -8,6 +8,9 @@ import { initTabs } from './ui/tabs.js';
 import { initCalculator } from './ui/calculator.js';
 import { initFilePicker } from './ui/filePicker.js';
 import { initCoverCheck } from './ui/coverCheck.js';
+import { registerServiceWorker } from './pwa.js';
+
+registerServiceWorker();
 
 const $ = (id) => document.getElementById(id);
 const MB = 1e6; // decimal MB, matching how the 650 MB limit is checked

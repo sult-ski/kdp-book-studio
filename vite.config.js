@@ -12,10 +12,10 @@ export default {
   preview: { headers: siteHeaders },
   plugins: [
     VitePWA({
-      // A new version takes over quietly on the next visit. No forced reload, so a check in progress
-      // is never interrupted.
+      // A new version takes over as soon as it is installed (skipWaiting + clientsClaim) and the page reloads
+      // once onto it (src/pwa.js), so nobody keeps seeing an old version after a deploy.
       registerType: 'autoUpdate',
-      injectRegister: 'script',
+      injectRegister: false, // registered in src/pwa.js
       manifest: {
         name: 'KDP Book Studio: interior preflight',
         short_name: 'KDP Preflight',
@@ -38,6 +38,8 @@ export default {
         globIgnores: ['ocr/**'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         // Character maps (CJK and other CID fonts, ~1.5 MB in ~170 files) are rarely needed:
         // cache each one the first time a book uses it.
         runtimeCaching: [{
