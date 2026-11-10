@@ -10,3 +10,5 @@ public/ocr/
 .env*
 .superpowers
 docs/research/*.pdf
+
+.claude/
