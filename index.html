@@ -93,7 +93,7 @@
           <input type="checkbox" id="deep" aria-describedby="deep-hint" aria-controls="deep-options" aria-expanded="false" />
           <span><strong>Deep content check</strong> <span class="deep__tag">Optional</span></span>
         </label>
-        <p class="hint" id="deep-hint">Also reads the words in your book for things KDP blocks or questions, like placeholder text, Project Gutenberg text or links to other stores. Still on your device. Takes a little longer.</p>
+        <p class="hint" id="deep-hint">Reads your book's words for placeholder text, Project Gutenberg text, links to other stores and more. Stays on your device; takes a little longer.</p>
         <div class="deep__options" id="deep-options" hidden>
           <div class="field-row">
             <div class="field">
@@ -110,8 +110,8 @@
             <div class="checks" id="contexts"></div>
             <p class="hint">These stop false alarms. For example, a hymnal repeats verses on purpose.</p>
           </fieldset>
-          <fieldset class="field">
-            <legend class="field__label">Book details from KDP <span class="field__opt">(optional)</span></legend>
+          <details class="advanced advanced--inner">
+            <summary><svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg> Book details from KDP <span class="field__opt">(optional)</span></summary>
             <p class="hint deep__lead">Type them exactly as in your KDP Bookshelf. We check they match what's printed in the book.</p>
             <div class="field-row">
               <div class="field"><label class="field__label field__label--sm" for="md-title">Title</label><input type="text" id="md-title" autocomplete="off" /></div>
@@ -120,7 +120,7 @@
               <div class="field"><label class="field__label field__label--sm" for="md-publisher">Publisher or imprint</label><input type="text" id="md-publisher" autocomplete="off" /></div>
               <div class="field"><label class="field__label field__label--sm" for="md-modeled">Book you modeled this on (title)</label><input type="text" id="md-modeled" autocomplete="off" /></div>
             </div>
-          </fieldset>
+          </details>
         </div>
       </fieldset>
 
