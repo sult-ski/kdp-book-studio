@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KDP Book Studio: check your paperback interior PDF</title>
-  <meta name="description" content="Check a paperback interior PDF against Amazon KDP's printing rules before you upload. Page size, margins, fonts, images and more, with plain-English fixes. Your file never leaves your device." />
-  <meta name="theme-color" content="#f3f2f7" />
+  <meta name="description" content="Catch print problems before KDP does. Check your paperback interior and cover PDFs against Amazon KDP's printing rules, with plain-English fixes. Your file never leaves your device." />
+  <meta name="theme-color" content="#f6f1e6" />
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 </head>
@@ -19,6 +19,10 @@
     <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4"/><path d="M12 17v.01"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.5v.01"/></symbol>
     <symbol id="i-pass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.7 2.7L16.2 9.5"/></symbol>
+    <symbol id="i-seal" viewBox="0 0 24 24"><path d="M12 2.6l2.3 1.7 2.8-.1 1 2.7 2.3 1.7-.9 2.7.9 2.7-2.3 1.7-1 2.7-2.8-.1L12 21.4l-2.3-1.7-2.8.1-1-2.7-2.3-1.7.9-2.7-.9-2.7 2.3-1.7 1-2.7 2.8.1z"/><path d="m8.4 12.2 2.5 2.5 4.7-5"/></symbol>
+    <symbol id="i-tab-interior" viewBox="0 0 24 24"><path d="M3.5 5.5h5.6A2.9 2.9 0 0 1 12 8.4V20a2.4 2.4 0 0 0-2.4-2.4H3.5z"/><path d="M20.5 5.5h-5.6A2.9 2.9 0 0 0 12 8.4V20a2.4 2.4 0 0 1 2.4-2.4h6.1z"/></symbol>
+    <symbol id="i-tab-cover" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9.5 3v18"/><path d="M13 8h3.5"/></symbol>
+    <symbol id="i-tab-size" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><path d="M7 8v3"/><path d="M11 8v4.5"/><path d="M15 8v3"/><path d="M19 8v4.5"/></symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <defs><!-- shaded "keep clear" zones on page previews, sized in page inches -->
       <pattern id="hatch" width="0.12" height="0.12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -27,42 +31,50 @@
   </svg>
 
   <header class="topbar">
-    <a class="brand" href="/"><img src="/icons/icon.svg" alt="" width="28" height="28" /> KDP Book Studio</a>
+    <a class="brand" href="/"><img src="/icons/icon.svg" alt="" width="30" height="30" /> <span>KDP Book Studio</span></a>
     <div class="tabs" role="tablist" aria-label="Tools">
-      <button type="button" class="tab" role="tab" id="tab-interior" aria-controls="panel-interior" aria-selected="true" data-hash="interior">Interior check</button>
-      <button type="button" class="tab" role="tab" id="tab-cover" aria-controls="panel-cover" aria-selected="false" tabindex="-1" data-hash="cover">Cover check</button>
-      <button type="button" class="tab" role="tab" id="tab-calculator" aria-controls="panel-calculator" aria-selected="false" tabindex="-1" data-hash="calculator">Cover calculator</button>
+      <span class="tabs__ind" aria-hidden="true"></span>
+      <button type="button" class="tab" role="tab" id="tab-interior" aria-controls="panel-interior" aria-selected="true" data-hash="interior"><svg class="icon tab__icon" aria-hidden="true"><use href="#i-tab-interior"/></svg><span>Interior</span></button>
+      <button type="button" class="tab" role="tab" id="tab-cover" aria-controls="panel-cover" aria-selected="false" tabindex="-1" data-hash="cover"><svg class="icon tab__icon" aria-hidden="true"><use href="#i-tab-cover"/></svg><span>Cover</span></button>
+      <button type="button" class="tab" role="tab" id="tab-calculator" aria-controls="panel-calculator" aria-selected="false" tabindex="-1" data-hash="calculator"><svg class="icon tab__icon" aria-hidden="true"><use href="#i-tab-size"/></svg><span>Spine &amp; size</span></button>
     </div>
   </header>
 
   <main>
   <div class="layout" id="panel-interior" role="tabpanel" aria-labelledby="tab-interior">
     <section class="hero" aria-labelledby="hero-title">
-      <h1 id="hero-title">Know your paperback will pass KDP before you upload it</h1>
-      <p class="lead">Check your book's interior PDF against Amazon KDP's printing rules: page size, margins, fonts, images and more. You get a plain-English list of what to fix, page by page.</p>
+      <h1 id="hero-title">Catch print problems before KDP does</h1>
+      <p class="lead">We check your interior PDF's page size, margins, fonts, images and file rules against KDP's printing guide, then list each fix by page.</p>
       <ol class="steps" aria-label="How it works">
-        <li><span class="steps__n" aria-hidden="true">1</span><span><strong>Upload</strong> your interior PDF</span></li>
-        <li><span class="steps__n" aria-hidden="true">2</span><span><strong>Choose settings</strong> to match KDP</span></li>
-        <li><span class="steps__n" aria-hidden="true">3</span><span><strong>Get a fix list</strong> with the pages affected</span></li>
+        <li><span class="steps__n" aria-hidden="true">1</span><span><strong>Choose</strong> your interior PDF</span></li>
+        <li><span class="steps__n" aria-hidden="true">2</span><span><strong>Match</strong> the settings you use in KDP</span></li>
+        <li><span class="steps__n" aria-hidden="true">3</span><span><strong>Read</strong> the fix list, page by page</span></li>
       </ol>
-      <ul class="badges" aria-label="About this tool">
-        <li><svg class="icon"><use href="#i-lock"/></svg> Private: your file stays on this device</li>
-        <li><svg class="icon"><use href="#i-offline"/></svg> Works offline</li>
-        <li><svg class="icon"><use href="#i-book"/></svg> Rules from KDP's help pages</li>
-      </ul>
+      <p class="privacy"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> Your PDF never leaves this device, and the tool works offline.</p>
     </section>
 
+    <aside class="sample" aria-label="Example of a finding">
+      <p class="sample__label">Example finding</p>
+      <div class="sample__row">
+        <svg class="issue__icon" aria-hidden="true"><use href="#i-fail"/></svg>
+        <p class="sample__title">Text too close to the binding edge</p>
+        <span class="sample__where">Page 47</span>
+      </div>
+      <p class="sample__body">This book has 212 pages, so KDP asks for a 0.5" inside margin. The text on this page sits 0.31" from the binding edge.</p>
+      <div class="issue__fix"><h3>How to fix</h3><p>Raise the inside margin to at least 0.5" in your document, then export the PDF again.</p></div>
+    </aside>
+
     <form id="settings" class="card setup" aria-labelledby="setup-title">
-      <h2 id="setup-title" class="card__title">Check your interior</h2>
+      <h2 id="setup-title" class="card__title">Your interior PDF</h2>
 
       <div class="field">
-        <label class="field__label" for="file">Interior PDF</label>
+        <label class="field__label" for="file">File</label>
         <div class="drop" id="drop">
           <input type="file" id="file" accept="application/pdf" required aria-describedby="file-status" />
           <svg class="drop__icon" aria-hidden="true"><use href="#i-file"/></svg>
           <span class="drop__text" id="file-status">
             <span class="drop__main"><span class="drop__cta">Choose a PDF</span> or drop it here</span>
-            <span class="drop__sub">The file is checked here and never uploaded</span>
+            <span class="drop__sub">It stays on your device</span>
           </span>
         </div>
       </div>
@@ -133,7 +145,7 @@
         </div>
       </details>
 
-      <button type="submit" class="btn btn--primary">Check my PDF</button>
+      <div class="form-actions"><button type="submit" class="btn btn--primary">Check my interior</button></div>
     </form>
 
     <section id="recap" class="card recap" aria-label="Your settings" hidden>
@@ -141,7 +153,7 @@
         <p class="recap__file" id="recap-file"></p>
         <p class="recap__meta" id="recap-meta"></p>
       </div>
-      <button type="button" class="btn btn--secondary" id="recap-edit">Edit settings</button>
+      <button type="button" class="btn btn--secondary" id="recap-edit">Change settings</button>
     </section>
 
     <section id="result" class="result" aria-label="Results"></section>
@@ -149,19 +161,20 @@
 
   <div class="layout" id="panel-cover" role="tabpanel" aria-labelledby="tab-cover" hidden>
     <section class="hero" aria-labelledby="cover-title">
-      <h1 id="cover-title">Check your cover before you upload it</h1>
-      <p class="lead">Choose your cover PDF and tell us about your book. You'll see whether the cover is the size KDP expects for your spine, and how to fix it if not.</p>
+      <h1 id="cover-title">Check your cover's size, spine and safe area</h1>
+      <p class="lead">Add your cover PDF and your book's details. We compare it with the size KDP expects for your spine and list what to change.</p>
       <ol class="steps" aria-label="How it works">
-        <li><span class="steps__n" aria-hidden="true">1</span><span><strong>Upload</strong> your cover PDF</span></li>
+        <li><span class="steps__n" aria-hidden="true">1</span><span><strong>Choose</strong> your cover PDF</span></li>
         <li><span class="steps__n" aria-hidden="true">2</span><span><strong>Enter</strong> trim size, paper and page count</span></li>
-        <li><span class="steps__n" aria-hidden="true">3</span><span><strong>Get a fix list</strong> for your cover</span></li>
+        <li><span class="steps__n" aria-hidden="true">3</span><span><strong>Read</strong> the fix list for your cover</span></li>
       </ol>
+      <p class="privacy"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> Your PDF never leaves this device.</p>
     </section>
 
     <form id="cover-form" class="card setup" aria-labelledby="cover-form-title">
-      <h2 id="cover-form-title" class="card__title">Check your cover</h2>
+      <h2 id="cover-form-title" class="card__title">Your cover PDF</h2>
       <div class="field">
-        <label class="field__label" for="cover-file">Cover PDF</label>
+        <label class="field__label" for="cover-file">File</label>
         <div class="drop" id="cover-drop">
           <input type="file" id="cover-file" accept="application/pdf" required aria-describedby="cover-file-status" />
           <svg class="drop__icon" aria-hidden="true"><use href="#i-file"/></svg>
@@ -192,7 +205,7 @@
           <p class="hint" id="cover-tolerance-hint">How far the cover may be from the exact size before it's flagged. This is our setting, not a KDP rule.</p>
         </div>
       </details>
-      <button type="submit" class="btn btn--primary">Check my cover</button>
+      <div class="form-actions"><button type="submit" class="btn btn--primary">Check my cover</button></div>
     </form>
 
     <section id="cover-result" class="result" aria-label="Cover results"></section>
@@ -200,8 +213,8 @@
 
   <div class="layout" id="panel-calculator" role="tabpanel" aria-labelledby="tab-calculator" hidden>
     <section class="hero" aria-labelledby="calc-title">
-      <h1 id="calc-title">Get the exact size of your paperback cover</h1>
-      <p class="lead">Enter your trim size, paper and page count. You get the spine width and full cover size KDP expects, and a PDF template with every guide in place for your design app.</p>
+      <h1 id="calc-title">Work out your cover size and spine width</h1>
+      <p class="lead">Enter your trim size, paper and page count. You get the exact cover dimensions and a PDF template with KDP's guides already drawn in.</p>
       <ul class="formula" aria-label="How KDP works it out">
         <li><strong>Spine</strong> = page count &times; paper thickness</li>
         <li><strong>Width</strong> = bleed + back + spine + front + bleed</li>
@@ -210,7 +223,7 @@
     </section>
 
     <form id="calc" class="card setup" aria-labelledby="calc-form-title">
-      <h2 id="calc-form-title" class="card__title">Your book</h2>
+      <h2 id="calc-form-title" class="card__title">Your book's details</h2>
       <div class="field">
         <label class="field__label" for="calc-trim">Trim size</label>
         <select id="calc-trim"></select>
@@ -232,8 +245,10 @@
   </main>
 
   <footer class="footer">
-    <p><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> No uploads. Your PDF is checked in your browser.</p>
-    <p>KDP rules last checked <span id="specs-checked">recently</span>. Independent tool, not made by Amazon.</p>
+    <div class="footer__inner">
+      <p class="footer__lead"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> Your PDF is read in your browser and never uploaded.</p>
+      <p>KDP rules last checked <span id="specs-checked">recently</span>. An independent tool, not made by Amazon.</p>
+    </div>
   </footer>
 
   <script type="module" src="/src/main.js"></script>

@@ -1,5 +1,7 @@
 // The form, the worker and progress. The report itself lives in ui/report.js.
 import '@fontsource-variable/inter/opsz.css';
+import '@fontsource/eb-garamond/latin-500.css';
+import '@fontsource/eb-garamond/latin-600.css';
 import './ui/styles.css';
 import specs from './config/kdp-specs.json';
 import { listTrims, listInkPaper, latestVerified } from './engine/specs.js';
@@ -105,10 +107,11 @@ const selectedText = (id) => $(id).selectedOptions[0]?.textContent ?? '';
 
 function showRecap(file, settings) {
   $('recap-file').textContent = file.name;
-  $('recap-meta').textContent = [
+  // One chip per setting: a row that scrolls sideways on a phone instead of wrapping into a paragraph.
+  $('recap-meta').replaceChildren(...[
     selectedText('trim'), selectedText('inkPaper'), settings.bleed ? 'Bleed' : 'No bleed',
     settings.deepContent ? 'Deep content check on' : null,
-  ].filter(Boolean).join(' · ');
+  ].filter(Boolean).map((t) => Object.assign(document.createElement('span'), { className: 'chip', textContent: t })));
   $('recap').hidden = false;
   panel.classList.add('is-done');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

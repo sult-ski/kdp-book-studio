@@ -79,12 +79,12 @@ export function renderReport(root, data) {
 /** `p` prefixes element ids, so two reports (interior and cover tabs) can be in the page at once. */
 export function verdictHtml(counts, subject = 'interior', p = '') {
   const n = counts.fail;
-  const title = n ? `Fix ${n} ${n === 1 ? 'thing' : 'things'} before uploading` : 'Ready for KDP';
+  const title = n ? `Fix ${n} ${n === 1 ? 'thing' : 'things'} before uploading` : 'Looks ready to upload';
   const lead = n
-    ? 'KDP will reject this file as it is. Open each problem below to see the pages and how to fix it.'
+    ? 'KDP is likely to reject this file as it is. Open each problem to see the pages and how to fix it.'
     : counts.warn
-      ? `Nothing here should stop KDP accepting your ${subject}. ${counts.warn === 1 ? 'One thing is' : `${counts.warn} things are`} worth checking before you upload.`
-      : `Nothing here should stop KDP accepting your ${subject}.`;
+      ? `We found nothing KDP is known to reject in your ${subject}. ${counts.warn === 1 ? 'One thing is' : `${counts.warn} things are`} worth a look before you upload.`
+      : `We found nothing KDP is known to reject in your ${subject}. We check printing rules, not whether KDP approves your content.`;
   const chips = ['fail', 'warn', 'info'].map((sev) => {
     const inner = `<strong>${counts[sev]}</strong> ${SEVERITY[sev].toLowerCase()}`;
     return `<li class="count" data-sev="${sev}" data-zero="${counts[sev] === 0}">${
@@ -93,7 +93,7 @@ export function verdictHtml(counts, subject = 'interior', p = '') {
   return `
     <section class="card verdict" data-state="${n ? 'fail' : 'pass'}" aria-labelledby="${p}verdict-title">
       <div class="verdict__head">
-        ${icon(n ? 'fail' : 'pass', 'verdict__icon')}
+        <span class="verdict__badge">${icon(n ? 'fail' : 'seal', 'verdict__icon')}</span>
         <div>
           <h2 id="${p}verdict-title" class="verdict__title" tabindex="-1">${title}</h2>
           <p class="verdict__lead">${lead}</p>
@@ -101,8 +101,8 @@ export function verdictHtml(counts, subject = 'interior', p = '') {
       </div>
       <ul class="counts" aria-label="Problems by type">${chips}</ul>
       <div class="verdict__actions">
-        <button type="button" class="btn btn--secondary" data-action="save-report">Save this report</button>
-        <span class="hint">A .json file to keep or send to your designer or formatter.</span>
+        <button type="button" class="btn btn--secondary" data-action="save-report">Download report</button>
+        <span class="hint">A .json file for you, your designer or your formatter.</span>
       </div>
     </section>`;
 }
