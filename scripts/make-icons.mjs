@@ -13,7 +13,7 @@ function render(size, { maskable = false } = {}) {
   const ctx = canvas.getContext('2d');
   if (maskable) {
     // Maskable icons get cropped to a circle or squircle: fill edge to edge, keep the art in the middle 80%.
-    ctx.fillStyle = '#1d2633';
+    ctx.fillStyle = '#1e4d3b';
     ctx.fillRect(0, 0, size, size);
     const inner = size * 0.8;
     ctx.drawImage(svg, (size - inner) / 2, (size - inner) / 2, inner, inner);

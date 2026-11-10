@@ -86,6 +86,7 @@ function renderCoverReport(root, data) {
   const pageInfo = new Map(pages.map((p) => [p.number, { ...p, caption: 'Your cover', overlay, legend: fit ? legendHtml(specs, words.length > 0) : '' }]));
   const ctx = { issues, pageInfo, thumbs, specs, prefix: 'cover-', onePageLabel: 'Cover' };
 
+  root.scrollTop = 0; // on wide screens the results are a scrolling pane: start at the verdict
   root.innerHTML = `
     <div class="report">
       ${verdictHtml(counts, 'cover', 'cover-')}

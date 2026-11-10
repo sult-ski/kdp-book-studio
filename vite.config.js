@@ -22,8 +22,8 @@ export default {
         description: "Check a paperback interior PDF against Amazon KDP's printing rules. Your file never leaves your device.",
         start_url: '/',
         display: 'standalone',
-        background_color: '#f3f2f7',
-        theme_color: '#1d2633',
+        background_color: '#f6f1e6',
+        theme_color: '#1e4d3b',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },

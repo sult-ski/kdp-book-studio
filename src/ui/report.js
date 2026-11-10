@@ -54,6 +54,7 @@ export function renderReport(root, data) {
   const pageInfo = new Map(pages.map((p) => [p.number, p]));
   const ctx = { issues, pageInfo, thumbs, specs: data.specs };
 
+  root.scrollTop = 0; // on wide screens the results are a scrolling pane: start at the verdict
   root.innerHTML = `
     <div class="report">
       ${verdictHtml(counts)}

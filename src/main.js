@@ -20,6 +20,12 @@ let worker; // the preflight Web Worker for the current check
 let thumbs = new Map(); // page number -> object URL of its thumbnail
 
 initTabs();
+
+// The example finding is open on wide screens and one tappable line on phones. Layout only.
+const wide = matchMedia('(min-width: 56.25rem)');
+const syncSamples = () => document.querySelectorAll('.sample').forEach((d) => { d.open = wide.matches; });
+wide.addEventListener('change', syncSamples);
+syncSamples();
 initCalculator(specs);
 initCoverCheck(specs);
 
@@ -50,6 +56,15 @@ $('specs-checked').textContent = `on ${new Date(`${latestVerified(specs)}T12:00:
   .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
 initFilePicker({ input: $('file'), zone: $('drop'), status: $('file-status') });
+
+// On a phone, once a file is chosen the sticky Check button appears. Bring the form to the top of the screen
+// so the button sits below the upload card instead of on top of it. Layout only.
+const narrow = matchMedia('(max-width: 47.99rem)');
+document.querySelectorAll('.setup input[type=file]').forEach((input) => input.addEventListener('change', () => {
+  if (!narrow.matches || !input.files[0]) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  input.closest('.setup').scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
+}));
 
 $('settings').addEventListener('submit', async (e) => {
   e.preventDefault();
