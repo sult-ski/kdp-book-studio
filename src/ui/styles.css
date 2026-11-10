@@ -289,10 +289,16 @@ h1 {
 .field__label { font-size: .9375rem; font-weight: 600; padding: 0; }
 .field-row { display: grid; gap: 1.25rem; }
 /* Trim size is short, ink and paper is long: unequal columns keep both readable side by side. */
-.field-row--pair { grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr); gap: .75rem; }
+.field-row--pair { grid-template-columns: max-content minmax(0, 1fr); gap: .75rem; } /* trim takes what its longest size needs, ink and paper the rest */
 .field-row--pair .field__label { white-space: nowrap; }
-.field-row--pair select { padding: 0 1.9rem 0 .7rem; background-position: right .5rem center; background-size: 1rem; font-size: .9375rem; }
-@media (max-width: 30rem) { .field-row--pair select { font-size: .875rem; } }
+.field-row--pair select { padding: 0 1.9rem 0 .7rem; background-position: right .5rem center; background-size: 1rem; font-size: .875rem; }
+/* A 360px phone has ~288px inside the card: too narrow for "Black ink, groundwood paper" beside Trim size.
+   Stack them there (full-width selects) and keep the pair from 32rem up, where both fit untruncated. */
+@media (max-width: 31.99rem) {
+  .field-row--pair { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .field-row--pair select { padding: 0 2.5rem 0 .9rem; background-position: right .8rem center; background-size: 1.1rem; font-size: .9375rem; }
+}
+@media (max-width: 21rem) { .field-row--pair select { font-size: .8125rem; padding-right: 2.1rem; } } /* 320px phones */
 .bleed-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .bleed-row .segmented { flex: 0 1 15rem; width: 100%; }
 .field--bleed .hint { margin-top: .1rem; }
@@ -769,7 +775,7 @@ body { overflow-x: clip; }
   position: absolute; width: var(--w, 22rem); will-change: transform;
   animation: drift var(--t, 70s) ease-in-out var(--delay, 0s) infinite alternate;
 }
-.obj { display: block; width: 100%; height: auto; color: var(--c); opacity: var(--o, .26); filter: blur(var(--blur, 28px)); }
+.obj { display: block; width: 100%; height: auto; color: var(--c); fill: currentColor; opacity: var(--o, .26); filter: blur(var(--blur, 28px)); }
 @keyframes drift {
   from { transform: translate3d(0, 0, 0) rotate(var(--r0, -8deg)); }
   to { transform: translate3d(var(--dx, 2.5vw), var(--dy, -3vh), 0) rotate(var(--r1, 6deg)); }
@@ -781,17 +787,20 @@ body { overflow-x: clip; }
     animation-timeline: auto, scroll(root);
   }
 }
-.obj-wrap--fern   { --w: 20rem; --c: #8fb86a; --o: .28; --blur: 22px; --t: 78s; --plx: -18vh; --r0: -14deg; --r1: -4deg; left: -5rem; top: 2%; }
-.obj-wrap--leaf   { --w: 17rem; --c: #6fb0a4; --o: .26; --blur: 20px; --t: 64s; --plx: -10vh; --r0: 18deg; --r1: 32deg; right: -3rem; top: 6%; --delay: -12s; }
-.obj-wrap--disc   { --w: 26rem; --c: #c4a177; --o: .22; --blur: 26px; --t: 90s; --plx: -22vh; right: -8rem; top: 48%; --delay: -30s; }
-.obj-wrap--sheet  { --w: 13rem; --c: #eec26a; --o: .3; --blur: 20px; --t: 72s; --plx: -8vh; --r0: -10deg; --r1: 4deg; left: 4%; top: 52%; --delay: -20s; }
-.obj-wrap--book   { --w: 18rem; --c: #b8926c; --o: .22; --blur: 22px; --t: 84s; --plx: -16vh; --r0: -6deg; --r1: 8deg; left: 22%; bottom: -3rem; --delay: -8s; }
-.obj-wrap--leaf2  { --w: 14rem; --c: #e6b252; --o: .28; --blur: 20px; --t: 68s; --plx: -12vh; --r0: -30deg; --r1: -16deg; right: 26%; bottom: 6%; --delay: -40s; }
-.obj-wrap--fern2  { --w: 11rem; --c: #9cc097; --o: .28; --blur: 20px; --t: 74s; --plx: -9vh; --r0: 20deg; --r1: 34deg; left: 46%; top: -2rem; --delay: -26s; }
+/* Colours and strengths were chosen so a single shape keeps muted text above 4.6:1 even over the foil's darkest peak (script check, not eyeballed);
+   only the fern is stronger on wide screens, because only the dark headline and the logo sit on it. Placement keeps the seven shapes in separate zones (edges, gutters, the bottom) so two rarely overlap, even while they drift. */
+.obj-wrap--fern   { --w: 18rem; --c: #4f9a3a; --o: .27; --blur: 12px; --t: 78s; --plx: -6vh; --r0: -12deg; --r1: -4deg; left: -2rem; top: -1rem; }
+.obj-wrap--leaf   { --w: 22rem; --c: #1f9d8a; --o: .19; --blur: 12px; --t: 64s; --plx: -4vh; --r0: 16deg; --r1: 28deg; right: -5rem; top: 3%; --delay: -12s; }
+.obj-wrap--disc   { --w: 22rem; --c: #a8743a; --o: .17; --blur: 14px; --t: 90s; --plx: -8vh; right: -9rem; top: 60%; --delay: -30s; }
+.obj-wrap--sheet  { --w: 10rem; --c: #e0a11a; --o: .32; --blur: 10px; --t: 72s; --plx: -3vh; --r0: -10deg; --r1: 4deg; left: 47%; top: 56%; --delay: -20s; }
+.obj-wrap--book   { --w: 26rem; --c: #9a6a3a; --o: .15; --blur: 12px; --t: 84s; --plx: -6vh; --r0: -6deg; --r1: 6deg; left: 14%; bottom: -3rem; --delay: -8s; }
+.obj-wrap--leaf2  { --w: 12rem; --c: #e09a1a; --o: .3; --blur: 10px; --t: 68s; --plx: -4vh; --r0: -28deg; --r1: -16deg; right: 22%; bottom: 4%; --delay: -40s; }
+.obj-wrap--fern2  { --w: 10rem; --c: #5aa05a; --o: .21; --blur: 10px; --t: 74s; --plx: -3vh; --r0: 18deg; --r1: 30deg; left: 38%; top: -4rem; --delay: -26s; }
 @media (max-width: 47.99rem) {
-  .obj-wrap { --w: 13rem; }
-  .obj-wrap--fern { --w: 12rem; left: -4rem; }
-  .obj-wrap--disc { --w: 15rem; right: -6rem; }
+  .obj-wrap--fern { --w: 9rem; --o: .19; left: -3rem; top: -1rem; } /* on phones text can sit anywhere: every shape stays at its AA-safe strength */
+  .obj-wrap--leaf { --w: 12rem; right: -4rem; top: 4%; }
+  .obj-wrap--disc { --w: 14rem; right: -6rem; top: 58%; }
+  .obj-wrap--book { --w: 16rem; left: -2rem; bottom: -2rem; }
   .obj-wrap--sheet, .obj-wrap--leaf2, .obj-wrap--fern2 { display: none; }
 }
 .btn:active { transition-duration: .15s; }
