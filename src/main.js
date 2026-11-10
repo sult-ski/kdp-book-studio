@@ -85,6 +85,7 @@ $('settings').addEventListener('submit', async (e) => {
     else if (data.type === 'thumb') thumbs.set(data.page, URL.createObjectURL(data.blob));
     else if (data.type === 'result') {
       renderReport($('result'), { specs, summary: data.summary, issues: data.issues, pages: data.pages, notChecked: data.notChecked ?? [], thumbs, file, settings });
+      showRecap(file, settings);
       done();
     } else if (data.type === 'error') { showMessage(data.message); done(); }
   };
@@ -95,6 +96,30 @@ $('settings').addEventListener('submit', async (e) => {
   };
   // Transfer (not copy) the bytes: the page doesn't need them any more.
   worker.postMessage({ bytes, settings }, [bytes.buffer]);
+});
+
+// With a report on screen the form folds into a one-line recap, so the verdict is the first thing seen.
+// "Edit settings" brings the form back. Styling and visibility only: the check itself is untouched.
+const panel = $('panel-interior');
+const selectedText = (id) => $(id).selectedOptions[0]?.textContent ?? '';
+
+function showRecap(file, settings) {
+  $('recap-file').textContent = file.name;
+  $('recap-meta').textContent = [
+    selectedText('trim'), selectedText('inkPaper'), settings.bleed ? 'Bleed' : 'No bleed',
+    settings.deepContent ? 'Deep content check on' : null,
+  ].filter(Boolean).join(' · ');
+  $('recap').hidden = false;
+  panel.classList.add('is-done');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  scrollTo({ top: 0, behavior: reduce ? 'instant' : 'smooth' });
+}
+
+$('recap-edit').addEventListener('click', () => {
+  panel.classList.remove('is-done');
+  $('recap').hidden = true;
+  scrollTo({ top: 0, behavior: 'instant' });
+  $('trim').focus({ preventScroll: true });
 });
 
 function showMessage(text) {

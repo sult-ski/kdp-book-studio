@@ -116,21 +116,38 @@ h1, h2, h3 { margin: 0; line-height: 1.2; }
   max-width: 72rem; margin: 0 auto; padding: 1.25rem 1rem 0;
   display: grid; gap: 1.75rem;
   grid-template-columns: minmax(0, 1fr); /* a select is as wide as its longest option; don't let it widen the page */
-  grid-template-areas: "hero" "form" "result";
+  grid-template-areas: "hero" "form" "recap" "result";
 }
 .hero { grid-area: hero; }
 .setup { grid-area: form; }
+.recap { grid-area: recap; }
 .result { grid-area: result; }
 @media (min-width: 60rem) {
   .layout {
     padding-top: 3rem; column-gap: 3.5rem; row-gap: 3rem;
     grid-template-columns: minmax(0, 1fr) 27rem;
-    grid-template-areas: "hero form" "result result";
+    grid-template-areas: "hero form" "recap recap" "result result";
     align-items: start;
   }
-  .result { width: 100%; max-width: 50rem; justify-self: center; }
+  .result, .recap { width: 100%; max-width: 50rem; justify-self: center; }
   .result:empty { display: none; }
 }
+
+/* After a check the form folds into a recap line: the verdict is the first thing in view.
+   The hero stays in the page for screen readers (its h1 names the page) but takes no space. */
+.layout.is-done { grid-template-areas: "recap" "result"; row-gap: 1.25rem; }
+.layout.is-done .setup { display: none; }
+.layout.is-done .hero {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+@media (min-width: 60rem) {
+  .layout.is-done { grid-template-columns: minmax(0, 50rem); justify-content: center; padding-top: 2rem; row-gap: 1.5rem; }
+}
+.recap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.25rem; padding: .85rem 1rem; }
+.recap__text { flex: 1 1 14rem; min-width: 0; } /* on a phone the button drops to its own row */
+.recap__file { margin: 0; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recap__meta { margin: .1rem 0 0; font-size: .875rem; color: var(--muted); }
+.recap .btn { flex: none; }
 
 /* ---------- Hero ---------- */
 h1 {

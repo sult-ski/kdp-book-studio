@@ -136,6 +136,14 @@
       <button type="submit" class="btn btn--primary">Check my PDF</button>
     </form>
 
+    <section id="recap" class="card recap" aria-label="Your settings" hidden>
+      <div class="recap__text">
+        <p class="recap__file" id="recap-file"></p>
+        <p class="recap__meta" id="recap-meta"></p>
+      </div>
+      <button type="button" class="btn btn--secondary" id="recap-edit">Edit settings</button>
+    </section>
+
     <section id="result" class="result" aria-label="Results"></section>
   </div>
 
@@ -224,7 +232,7 @@
   </main>
 
   <footer class="footer">
-    <p><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> Your PDF is checked in your browser and never uploaded, stored or shared. No tracking.</p>
+    <p><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg> No uploads. Your PDF is checked in your browser.</p>
     <p>KDP rules last checked <span id="specs-checked">recently</span>. Independent tool, not made by Amazon.</p>
   </footer>
 
